@@ -1,0 +1,139 @@
+
+
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+
+
+body {
+  font-family: Arial, sans-serif;
+  background: #00a2ff;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HEADER */
+header {
+  text-align: center;
+  padding: 20px 20px 10px;
+}
+.header-logo {
+  display: inline-block;
+  background: #000;
+  color: #fff;
+  padding: 10px 30px;
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+/* LAYOUT */
+.layout {
+  flex: 1;
+  display: flex;
+  padding: 20px 40px;
+  gap: 30px;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 240px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 16px;
+  padding: 20px 16px;
+}
+.sidebar h2 {
+  font-size: 16px;
+  margin-bottom: 14px;
+}
+.btn-create {
+  width: 100%;
+  padding: 10px 0;
+  background: #ffffff;
+  color: #00a2ff;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+.btn-create:hover {
+  background: #e8e8e8;
+}
+.sidebar ul {
+  list-style: none;
+  font-size: 14px;
+}
+.sidebar li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+}
+.sidebar li:last-child {
+  border-bottom: none;
+}
+
+/* MAIN CONTENT */
+.content-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.create-exo-btn {
+  background: #ffffff;
+  color: #00a2ff;
+  border: none;
+  padding: 18px 40px;
+  font-size: 18px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.create-exo-btn:hover {
+  background: #f0f0f0;
+}
+
+/* FOOTER */
+footer {
+  background: #fff;
+  color: #333;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+.footer-left a {
+  margin-right: 15px;
+  color: #333;
+  text-decoration: none;
+  font-weight: bold;
+}
+.footer-center {
+  text-align: center;
+  flex: 1;
+  font-size: 13px;
+}
+.footer-center strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.footer-right {
+  text-align: right;
+  font-size: 13px;
+}
+.social-icons span {
+  display: inline-block;
+  margin-left: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ddd;
+  line-height: 20px;
+  text-align: center;
+  font-size: 11px;
+}
