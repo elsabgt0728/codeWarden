@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="interfacecandidat.css">
+    <link rel="stylesheet" href="interfaceCandidat.css">
 </head>
 <body>
     <header>
@@ -33,18 +33,62 @@
 
     <div class="titre">
 
+    <div class="namespace">
+        Dashboard candidat
+    </div>
+    <div class="phraseintro">
+        Bienvenue, consultez votre test d'admission et suivez votre progression.
+    </div>
+
     </div>
 
 
-    <div class="blocprincipal">
+    <div class="card">
 
+    <div class="entete">
+        
+        <div class="logo"><img src="icone feuille.png" alt=""></div>
+    <div class="textcard">
+        <h3>Accéder au test</h3>
+        <h4>Test d'admission 2026</h4>
     </div>
 
+     </div>
+
+
+    <div class="autorisation">
+
+    <div class="coche">✅</div>
+
+        <div class="textauto">
+        <h3>Accès autorisé</h3>
+        <h4>Vous pouvez commencer votre test d'admission.</h4>
+        </div>
+    </div>
+</div>
 
     <div class="informations">
 
+    <h3>Informations</h3>
+
+    <div class="inforow">
+        <span class="label">Durée du test</span>
+        <span class="value">? minutes</span>
     </div>
 
+     <div class="inforow">
+        <span class="label">Questions</span>
+        <span class="value">? questions</span>
+     </div>
+
+      <div class="inforow">
+        <span class="label">Type</span>
+        <span class="value">QCM?</span>
+      </div>
+        
+        
+    </div>
+ 
 
 </main>
 
