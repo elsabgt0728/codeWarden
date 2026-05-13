@@ -1,0 +1,93 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: sans-serif;
+    background: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.container {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 6px;
+    width: 100%;
+    max-width: 420px;
+}
+
+h1 {
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+}
+
+h2 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.2rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.95rem;
+}
+
+input.invalid {
+    border-color: red;
+}
+
+.error {
+    color: red;
+    font-size: 0.8rem;
+    margin-bottom: 0.6rem;
+    display: block;
+}
+
+.alert {
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.alert-error   { background: #fdd; border: 1px solid red; color: #900; }
+.alert-success { background: #dfd; border: 1px solid green; color: #060; }
+
+button {
+    width: 100%;
+    padding: 0.6rem;
+    margin-top: 0.8rem;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button:hover { background: #555; }
+
+.link {
+    margin-top: 1rem;
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.link a { color: #333; }
+
+@media (max-width: 480px) {
+    .container { padding: 1.2rem; }
+}
