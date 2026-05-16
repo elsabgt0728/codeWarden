@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (isset($_SESSION['user_id'])) {
+if (isset($_SESSION['id_candidat'])) {
     header('Location: profile.php');
     exit;
 }

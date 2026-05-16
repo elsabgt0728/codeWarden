@@ -37,7 +37,7 @@ if ($confirm === '') {
 }
 
 if (empty($errors)) {
-    $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+    $stmt = $pdo->prepare('SELECT id_candidat FROM candidat WHERE email = ?');
     $stmt->execute([$email]);
     if ($stmt->fetch()) {
         $errors['email'] = 'Cet e-mail est déjà utilisé.';
@@ -52,7 +52,7 @@ if (!empty($errors)) {
 }
 
 $hash = password_hash($password, PASSWORD_BCRYPT);
-$pdo->prepare('INSERT INTO users (nom, prenom, email, password) VALUES (:nom, :prenom, :email, :password)')->execute([
+$pdo->prepare('INSERT INTO candidat (nom, prenom, email, password) VALUES (:nom, :prenom, :email, :password)')->execute([
     ':nom' => $nom,
     ':prenom' => $prenom,
     ':email' => $email,
