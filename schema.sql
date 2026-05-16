@@ -11,7 +11,8 @@ USE codewarden;
 
 CREATE TABLE
     ETABLISSEMENT (
-        id_etablissement INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        -- pour le test, id_etablissement null mais à modifier quand le formulaire sera modifié
+        id_etablissement INT PRIMARY KEY AUTO_INCREMENT  NULL,
         nom VARCHAR(255) NOT NULL,
         logo VARCHAR(255),
         email_contact VARCHAR(255) NOT NULL,
@@ -42,7 +43,9 @@ CREATE TABLE
         date_naissance DATE,
         code_acces VARCHAR(100),
         statut ENUM('actif', 'inactif', 'suspendu') NOT NULL DEFAULT 'actif',
-        id_etablissement INT NOT NULL,
+        
+         -- pour le test, id_etablissement null mais à modifier quand le formulaire sera modifié
+        id_etablissement INT  NULL,
         FOREIGN KEY (id_etablissement) REFERENCES ETABLISSEMENT (id_etablissement) ON UPDATE CASCADE ON DELETE RESTRICT
     );
 
