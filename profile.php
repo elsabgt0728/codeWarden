@@ -1,15 +1,15 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['id_candidat'])) {
     header('Location: login.php');
     exit;
 }
 
 require 'db_connect.php';
 
-$stmt = $pdo->prepare('SELECT * FROM users WHERE id = ?');
-$stmt->execute([$_SESSION['user_id']]);
+$stmt = $pdo->prepare('SELECT * FROM candidat WHERE id_candidat = ?');
+$stmt->execute([$_SESSION['id_candidat']]);
 $user = $stmt->fetch();
 
 $errors  = $_SESSION['profile_errors']  ?? [];

@@ -17,7 +17,7 @@ if ($email === '' || $password === '') {
     exit;
 }
 
-$stmt = $pdo->prepare('SELECT * FROM users WHERE email = ?');
+$stmt = $pdo->prepare('SELECT * FROM candidat WHERE email = ?');
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 
@@ -29,7 +29,7 @@ if (!$user || !password_verify($password, $user['password'])) {
 }
 
 session_regenerate_id(true);
-$_SESSION['user_id'] = $user['id'];
+$_SESSION['id_candidat'] = $user['id_candidat'];
 
 header('Location: profile.php');
 exit;

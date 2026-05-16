@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['id_candidat'])) {
     header('Location: login.php');
     exit;
 }
@@ -16,7 +16,7 @@ require 'db_connect.php';
 $prenom = trim($_POST['prenom'] ?? '');
 $nom    = trim($_POST['nom']    ?? '');
 $email  = trim($_POST['email']  ?? '');
-$userId = $_SESSION['user_id'];
+$userId = $_SESSION['id_candidat'];
 
 $errors = [];
 
@@ -28,7 +28,7 @@ if ($email === '') {
 } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors['email'] = 'Adresse e-mail invalide.';
 } else {
-    $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ? AND id != ?');
+    $stmt = $pdo->prepare('SELECT id_candidat FROM candidat WHERE email = ? AND id_candidat != ?');
     $stmt->execute([$email, $userId]);
     if ($stmt->fetch()) {
         $errors['email'] = 'Cet e-mail est déjà utilisé.';
@@ -42,7 +42,7 @@ if (!empty($errors)) {
     exit;
 }
 
-$pdo->prepare('UPDATE users SET nom = ?, prenom = ?, email = ? WHERE id = ?')->execute([$nom, $prenom, $email, $userId]);
+$pdo->prepare('UPDATE candidat SET nom = ?, prenom = ?, email = ? WHERE id_candidat = ?')->execute([$nom, $prenom, $email, $userId]);
 
 $_SESSION['profile_success'] = 'Profil mis à jour.';
 header('Location: profile.php');
