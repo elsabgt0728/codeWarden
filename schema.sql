@@ -8,7 +8,6 @@ CREATE DATABASE
 USE codewarden;
 
 -- TABLE : ETABLISSEMENT
-
 CREATE TABLE
     ETABLISSEMENT (
         -- pour le test, id_etablissement null mais à modifier quand le formulaire sera modifié
