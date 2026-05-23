@@ -1,0 +1,248 @@
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: block;
+            background: #F5F9FF;
+            font-family: sans-serif;
+        }
+
+        /*header*/
+
+        header{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 0.06rem solid #e5e5e5;
+            background-color: white;
+        }
+
+         .entete-text{
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .entete-text h1{
+            font-size: 2rem;
+            margin: 0;
+        }
+
+         main{
+            display: flex;
+            flex-direction: column;  /*empilation des blocs*/
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .progress-box{
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            width:  65%;
+            height: 12vh;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            align-items: flex-start;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+         .loading-container { /* La barre principale*/
+            width: 90%; 
+            text-align: center;
+            color : #2563EB;
+            font-size: 1rem;
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+
+        .progress-header{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+       
+        .progress-title{
+            color: #555;
+            font-size: 1rem;
+        }
+
+  
+        .progress-percent{
+            color: #2563EB;
+            font-weight: 500;
+        }
+
+        #barre { /* Fond de la barre */
+            width: 100%;
+            height: 0.5rem;
+            margin-top: 10px;
+            border-radius: 999px;
+            overflow: hidden;
+            background-color: rgb(230, 230, 230); 
+        }
+
+        #progres { /*Remplissage*/
+           background: linear-gradient(to right, #3b82f6, #2563EB); /* ✅ dégradé comme UI moderne */
+           border-radius: 999px;
+           transition: width 0.4s ease; 
+        }
+
+
+        .container{
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            width: 65%;
+            height: 45vh;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            align-items: flex-start;
+            font-size: 1rem;
+            font-weight: 200;
+        }
+
+        .contenu{
+            margin: 2rem;
+        }
+
+        
+          .under-container{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        }
+
+
+        .question-nav{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        background-color: white;
+        border: 0.1rem solid white;
+        border-radius: 0.8rem;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        align-items: center;
+        margin: 1rem;
+        width: 27vw;
+        height: 20vh;
+        }
+
+
+        .quiz-nav{
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        background-color: white;
+        border: 0.1rem solid white;
+        border-radius: 0.8rem;
+        padding: 1.5rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        align-items: center;
+        margin: 1rem;
+        width: 27vw;
+        height: 20vh;
+         overflow-y: hidden;
+        }
+        
+
+
+          .btn-nav{
+            background-color: white;
+            width: 40%; 
+            height: 2.5rem; 
+            margin: 0.5rem;
+            border-radius: 10px; 
+            border: 1.5px solid #ccc; 
+            cursor: pointer; 
+        }
+
+         .btn-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            width: 65%;
+            height: 15vh;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+
+        .box-container{
+            display: flex;
+             gap: 10px;
+            justify-content: center;
+            flex-direction: row;
+             overflow-y: auto;
+    /* 🔥 Le conteneur prend toute la hauteur restante */
+             height: calc(100% - 2.5rem);    /* prend toute la hauteur restante sous le titre */
+             overflow-x: auto;
+              overflow-y: auto;
+            margin-top: 1.5rem;
+        }
+
+        .question-box{
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            border: 2px solid #8fd19e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #d4edda;
+            cursor: pointer;
+        }
+
+   
+        .question-box.active{
+            background-color: #3b5bdb;
+            color: white;
+            border: none;
+        }
+
+
+        .question-box.disabled{
+            background-color: #eee;
+            border: none;
+            color: #777;
+        }
+
+        .submit {
+        width: 90%;
+        height: 3rem;
+        background-color: #4CAF50; /* vert principal */
+        color: white;
+        border: none;
+        border-radius: 15px;
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem; /* espace icône texte */
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15); /* effet profondeur */
+      } 
+
+           .submit:hover {
+        background-color: #43a047;
+        transform: translateY(-2px); /* léger effet levé */
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      }
+
+        .submit:disabled {
+        background-color: #b0b5bd;
+        color: #666;
+        cursor: not-allowed;
+
+        box-shadow: none;
+        transform: none;
+    }
+
+       
