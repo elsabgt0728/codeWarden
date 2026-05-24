@@ -67,17 +67,59 @@
             <input type="number" name="nbquestions" id="nbquestions" min="1">
         </div>
 
-        <!-- Fichier -->
-        <div class="form-group">
-            <label for="fichier">Fichier (PDF, image, ZIP…)</label>
-            <input type="file" name="fichier" id="fichier" accept=".pdf,.png,.jpg,.jpeg,.zip">
-        </div>
+        <div id="questions-container"></div>
 
-        
+
         <button type="submit" class="btn-submit">Créer l'exercice</button>
 
     </form>
 </div>
+
+<script>
+
+document.getElementById("nbquestions").addEventListener("change", function() {
+    const nb = parseInt(this.value);
+    const container = document.getElementById("questions-container");
+    container.innerHTML = "";
+
+    for (let i = 1; i <= nb; i++) {
+        container.innerHTML += `
+            <div class="question-block">
+                <h3>Question ${i}</h3>
+
+                <div class="form-group">
+                    <label>Intitulé</label>
+                    <textarea name="question_intitule_${i}" rows="2" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Image (optionnel)</label>
+                    <input type="file" name="question_image_${i}[]" accept="image/*,.pdf,.png,.jpg,.jpeg,.zip">
+                </div>
+
+                <div class="form-group">
+                    <label>Points</label>
+                    <input type="number" name="question_points_${i}" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Type</label>
+                    <select name="question_type_${i}">
+                        <option value="texte">Réponse texte</option>
+                        <option value="qcm">QCM</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Bonne réponse (si QCM)</label>
+                    <input type="text" name="question_bonne_${i}">
+                </div>
+            </div>
+        `;
+    }
+});
+</script>
+
 
 </body>
 </html>

@@ -76,3 +76,18 @@
 .btn-submit:hover {
   background: #f0f0f0;
 }
+
+.question-block {
+  background: rgba(255,255,255,0.12);
+  padding: 20px;
+  border-radius: 16px;
+  margin-top: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.question-block h3 {
+  color: #fff;
+  margin-bottom: 12px;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
