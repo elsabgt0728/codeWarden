@@ -1,8 +1,4 @@
 <?php
-require_once "db_connect.php";
-$requete = $db->prepare("SELECT * FROM candidat, test ;");
-$requete->execute();
-
 $page = $_GET["page"] ?? "dashboard";
 ?>
 
