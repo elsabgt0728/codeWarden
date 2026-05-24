@@ -7,7 +7,7 @@
             margin: 0;
             min-height: 100vh;
             display: block;
-            background: #f2f5ff;
+            background: #e9f4ff;
         }
 
         /*header*/
@@ -18,7 +18,9 @@
             align-items: center;
             padding: 1rem 2rem;
             border-bottom: 0.06rem solid #e5e5e5;
-            background-color: white;
+            background: #0091e6; 
+            color: #fff; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
 
@@ -54,12 +56,13 @@
         .partgauche h1{
             font-size: 1.8rem;
             margin: 0;
+            color: #fff;
         }
 
         .partgauche h2{
             font-size: 0.9rem;
             margin: 0;
-            color: #6b7280;
+            color: #d9ecff;;
             font-weight: 400;
         }
 
@@ -74,11 +77,12 @@
 
         .partdroite span{
             font-size: 0.8rem;
-            color: #666;
+            color:#e8f4ff;;
         }
 
         .partdroite strong{
             font-size: 0.9rem;
+            color: #fff;
         }
 
         .partdroite button{
@@ -91,6 +95,7 @@
             background-color: white;
             border-color: white;
             border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
 
@@ -104,10 +109,7 @@
         }
 
         .titre{
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
+           text-align: center;
             padding: 1rem;
         }
 
@@ -115,17 +117,19 @@
             font-size: 1.7rem;
             font-weight: bolder;
             padding: 1rem;
+            color: #0077cc;
         }
 
   
         .card {
             display: flex;
             flex-direction: column;
-            background-color: white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.9); 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25); 
             width: 90%;
-            height: 55vh;
-            border-radius: 5%;
+           height: 60vh;
+            border-radius: 20px; /* ⭐ MODIFIÉ */
+            backdrop-filter: blur(6px); 
             border: none;
         }
 
@@ -138,6 +142,7 @@
         .entete h3{
             font-size: 1.3rem;
             margin: 0;
+            color: #0077cc;
         }
 
         .entete h4{
@@ -164,11 +169,13 @@
         align-self: center;
         align-items: flex-start;
         gap: 1rem;
-        background-color: #ecfdf5;
-        border: 0.1rem solid #a7f3d0;
-        border-radius: 0.8rem;
+        background-color: rgba(230,255,240,0.7);
+        border: 0.1rem solid #8fd19e;
+        border-radius: 16px;
         margin-top: 1rem;
+        padding: 1rem;
         width: 90%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         
@@ -194,9 +201,10 @@
         .informations{
         background-color: #EEF4FA;
         border: 0.1rem solid #9ccbd7;
-        border-radius: 0.8rem;
+        border-radius: 16px;
         padding: 1.5rem;
         width: 40%;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.25);
         }
 
         .inforow {
@@ -219,10 +227,10 @@
         .btnStart{
             width: 90%;
             padding: 1rem 1.5rem;
-            background-color: #2563EB;
-            color: #ffffff;
+            background-color: #00a2ff;
+            color: #fff;
             border: none;
-            border-radius: 0.75rem;
+            border-radius: 15px;
             font-size: 1rem;
             font-weight: 400;
             display: flex;
@@ -231,7 +239,7 @@
             gap: 0.5rem;
             cursor: pointer;
             background-color: 0.2s ease;
-            box-shadow: 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
             transform: 0.1s ease;
             margin-left: 3.5rem;
             margin-top: 1rem;
@@ -245,8 +253,8 @@
 
 
         .btnStart:hover {
-        background-color: #1D4ED8; /* bleu un peu plus foncé */
-        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.45);
+        background-color: #008ed1; /* bleu un peu plus foncé */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.35);
         }
 
 
@@ -256,7 +264,7 @@
 
 
         .btnStart:active {
-        transform: scale(0.98);
+        transform: scale(0.97);
         }
 
         .icone{

@@ -1,248 +1,224 @@
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: block;
-            background: #00a2ff;
-            font-family: sans-serif;
-        }
-
-        /*header*/
-
-        header{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            border-bottom: 0.06rem solid #e5e5e5;
-            background-color: white;
-        }
-
-         .entete-text{
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .entete-text h1{
-            font-size: 2rem;
-            margin: 0;
-        }
-
-         main{
-            display: flex;
-            flex-direction: column;  /*empilation des blocs*/
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .progress-box{
-            display: flex;
-            flex-direction: column;
-            background-color: #cadde8;
-            width:  65%;
-            height: 12vh;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            align-items: flex-start;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-        }
-
-         .loading-container { /* La barre principale*/
-            width: 90%; 
-            text-align: center;
-            color : #2563EB;
-            font-size: 1rem;
-            margin-left: 2rem;
-            margin-top: 1rem;
-        }
-
-        .progress-header{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-       
-        .progress-title{
-            color: #555;
-            font-size: 1rem;
-        }
-
-  
-        .progress-percent{
-            color: #2563EB;
-            font-weight: 500;
-        }
-
-        #barre { /* Fond de la barre */
-            width: 100%;
-            height: 0.5rem;
-            margin-top: 10px;
-            border-radius: 999px;
-            overflow: hidden;
-            background-color: rgb(230, 230, 230); 
-        }
-
-        #progres { /*Remplissage*/
-           background: linear-gradient(to right, #3b82f6, #2563EB); /* ✅ dégradé comme UI moderne */
-           border-radius: 999px;
-           transition: width 0.4s ease; 
-        }
+     
+    body {
+    margin: 0;
+    min-height: 100vh;
+    display: block;
+    background: #00a2ff; /* bleu principal */
+    font-family: Arial, sans-serif;
+}
 
 
-        .container{
-            display: flex;
-            flex-direction: column;
-            background-color: white;
-            width: 65%;
-            height: 45vh;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            align-items: flex-start;
-            font-size: 1rem;
-            font-weight: 200;
-        }
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #0091e6; /* bleu admin */
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
 
-        .contenu{
-            margin: 2rem;
-        }
-
-        
-          .under-container{
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        }
+.entete-text h1 {
+    font-size: 2rem;
+    margin: 0;
+    letter-spacing: 1px;
+}
 
 
-        .question-nav{
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        background-color: white;
-        border: 0.1rem solid white;
-        border-radius: 0.8rem;
-        padding: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        align-items: center;
-        margin: 1rem;
-        width: 27vw;
-        height: 20vh;
-        }
+.timer {
+    background: rgba(255,255,255,0.2);
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
 
 
-        .quiz-nav{
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        background-color: white;
-        border: 0.1rem solid white;
-        border-radius: 0.8rem;
-        padding: 1.5rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        align-items: center;
-        margin: 1rem;
-        width: 27vw;
-        height: 20vh;
-         overflow-y: hidden;
-        }
-        
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
 
 
-          .btn-nav{
-            background-color: white;
-            width: 40%; 
-            height: 2.5rem; 
-            margin: 0.5rem;
-            border-radius: 10px; 
-            border: 1.5px solid #ccc; 
-            cursor: pointer; 
-        }
+.progress-box {
+    background: rgba(255,255,255,0.15);
+    width: 65%;
+    height: 12vh;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    padding: 1rem 2rem;
+    backdrop-filter: blur(6px);
+    margin-top: 2rem;
+}
 
-         .btn-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: white;
-            width: 65%;
-            height: 15vh;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        }
+.loading-container {
+    width: 100%;
+    color: #fff;
+}
 
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
 
-        .box-container{
-            display: flex;
-             gap: 10px;
-            justify-content: center;
-            flex-direction: row;
-             overflow-y: auto;
-    /* 🔥 Le conteneur prend toute la hauteur restante */
-             height: calc(100% - 2.5rem);    /* prend toute la hauteur restante sous le titre */
-             overflow-x: auto;
-              overflow-y: auto;
-            margin-top: 1.5rem;
-        }
+.progress-title {
+    color: rgba(255,255,255,0.9);
+    font-size: 1rem;
+}
 
-        .question-box{
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            border: 2px solid #8fd19e;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #d4edda;
-            cursor: pointer;
-        }
-
-   
-        .question-box.active{
-            background-color: #3b5bdb;
-            color: white;
-            border: none;
-        }
+.progress-percent {
+    color: #fff;
+    font-weight: bold;
+}
 
 
-        .question-box.disabled{
-            background-color: #eee;
-            border: none;
-            color: #777;
-        }
+#barre {
+    width: 100%;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.3);
+    overflow: hidden;
+}
 
-        .submit {
-        width: 90%;
-        height: 3rem;
-        background-color: #4CAF50; /* vert principal */
-        color: white;
-        border: none;
-        border-radius: 15px;
-        font-size: 1rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem; /* espace icône texte */
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.15); /* effet profondeur */
-      } 
+#progres {
+    background: white;
+    height: 100%;
+    width: 15%;
+    border-radius: 999px;
+    transition: width 0.4s ease;
+}
 
-           .submit:hover {
-        background-color: #43a047;
-        transform: translateY(-2px); /* léger effet levé */
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-      }
 
-        .submit:disabled {
-        background-color: #b0b5bd;
-        color: #666;
-        cursor: not-allowed;
+.container {
+    background: #fff;
+    width: 65%;
+    height: 45vh;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    font-size: 1rem;
+    overflow-y: auto;
+}
 
-        box-shadow: none;
-        transform: none;
-    }
+.contenu {
+    padding: 2rem;
+}
 
-       
+
+.under-container {
+    display: flex;
+    justify-content: space-between;
+    width: 65%;
+}
+
+.question-nav,
+.quiz-nav {
+    background: #F5F9FF;
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: 27vw;
+    height: 20vh;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    backdrop-filter: blur(6px);
+}
+
+/* BOUTONS PRECEDENT / SUIVANT */
+.btn-nav {
+    background: #fff;
+    width: 40%;
+    height: 2.5rem;
+    margin: 0.5rem;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    cursor: pointer;
+    font-weight: bold;
+    color: #0077cc;
+    transition: 0.2s;
+}
+
+.btn-nav:hover {
+    background: #f0f8ff;
+    border-color: #fff;
+}
+
+
+.box-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+.question-box {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    border: 2px solid #00c3ff;
+    background: #e0f7ff;
+    color: #0077cc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.question-box:hover {
+    background: #c8eeff;
+}
+
+.question-box.active {
+    background: #3b5bdb;
+    color: white;
+    border: none;
+}
+
+.question-box.disabled {
+    background: #ccc;
+    color: #666;
+    border: none;
+}
+
+
+.btn-box {
+    background: #F5F9FF;
+    width: 65%;
+    height: 15vh;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(6px);
+}
+
+.submit {
+    width: 90%;
+    height: 3rem;
+    background: #00c853;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.submit:hover {
+    background: #00b44a;
+    transform: translateY(-2px);
+}
+
+.submit:disabled {
+    background: #9bb5c1;
+    cursor: not-allowed;
+    box-shadow: none;
+}

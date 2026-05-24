@@ -140,7 +140,7 @@ elseif($page === "test"):
         
             <div class="progress-header">
                 <span class="progress-title">Progression totale</span>
-             <span class="progress-percent"><span id="count">0</span>%</span>
+             <span class="progress-percent"><span id="count">15</span>%</span>
             </div>
                 <div id="barre">
                     <div id="progres"></div>
