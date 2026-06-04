@@ -1,23 +1,10 @@
-<?php
-session_start();
-
-if (isset($_SESSION['id_candidat'])) {
-    header('Location: profile.php');
-    exit;
-}
-
-$errors  = $_SESSION['signup_errors'] ?? [];
-$old     = $_SESSION['signup_old']    ?? [];
-$success = $_SESSION['signup_success'] ?? '';
-unset($_SESSION['signup_errors'], $_SESSION['signup_old'], $_SESSION['signup_success']);
-?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Inscription – CodeWarden</title>
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/style.css">
 </head>
 <body>
 <div class="container">
@@ -27,18 +14,18 @@ unset($_SESSION['signup_errors'], $_SESSION['signup_old'], $_SESSION['signup_suc
         <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
     <?php endif; ?>
 
-    <form id="signup-form" action="process_sign_up.php" method="post" novalidate>
+    <form id="signup-form" action="<?= BASE_URL ?>/signup" method="post" novalidate>
 
         <label for="prenom">Prénom</label>
-        <input type="text" id="prenom" name="prenom" value="<?= htmlspecialchars($old['prenom'] ?? '') ?>">
+        <input type="text" id="prenom" name="prenom" value="<?= htmlspecialchars($form['prenom'] ?? '') ?>">
         <span class="error" id="err-prenom"><?= htmlspecialchars($errors['prenom'] ?? '') ?></span>
 
         <label for="nom">Nom</label>
-        <input type="text" id="nom" name="nom" value="<?= htmlspecialchars($old['nom'] ?? '') ?>">
+        <input type="text" id="nom" name="nom" value="<?= htmlspecialchars($form['nom'] ?? '') ?>">
         <span class="error" id="err-nom"><?= htmlspecialchars($errors['nom'] ?? '') ?></span>
 
         <label for="email">E-mail</label>
-        <input type="email" id="email" name="email" value="<?= htmlspecialchars($old['email'] ?? '') ?>">
+        <input type="email" id="email" name="email" value="<?= htmlspecialchars($form['email'] ?? '') ?>">
         <span class="error" id="err-email"><?= htmlspecialchars($errors['email'] ?? '') ?></span>
 
         <label for="password">Mot de passe</label>
@@ -53,9 +40,9 @@ unset($_SESSION['signup_errors'], $_SESSION['signup_old'], $_SESSION['signup_suc
     </form>
 
     <div class="link">
-        Déjà inscrit ? <a href="login.php">Se connecter</a>
+        Déjà inscrit ? <a href="<?= BASE_URL ?>/">Se connecter</a>
     </div>
 </div>
-<script src="validation.js"></script>
+<script src="<?= BASE_URL ?>/public/assets/js/validation.js"></script>
 </body>
 </html>
