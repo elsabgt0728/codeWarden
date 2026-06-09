@@ -1,23 +1,10 @@
-<?php
-session_start();
-
-if (isset($_SESSION['id_candidat'])) {
-    header('Location: profile.php');
-    exit;
-}
-
-$error     = $_SESSION['login_error']    ?? '';
-$success   = $_SESSION['signup_success'] ?? '';
-$old_email = $_SESSION['login_email']    ?? '';
-unset($_SESSION['login_error'], $_SESSION['signup_success'], $_SESSION['login_email']);
-?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Connexion – CodeWarden</title>
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/style.css">
 </head>
 <body>
 <div class="container">
@@ -31,10 +18,10 @@ unset($_SESSION['login_error'], $_SESSION['signup_success'], $_SESSION['login_em
         <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
 
-    <form id="login-form" action="process_login.php" method="post" novalidate>
+    <form id="login-form" action="<?= BASE_URL ?>/login" method="post" novalidate>
 
         <label for="email">E-mail</label>
-        <input type="email" id="email" name="email" value="<?= htmlspecialchars($old_email) ?>">
+        <input type="email" id="email" name="email" value="<?= htmlspecialchars($email) ?>">
         <span class="error" id="err-email"></span>
 
         <label for="password">Mot de passe</label>
@@ -45,9 +32,9 @@ unset($_SESSION['login_error'], $_SESSION['signup_success'], $_SESSION['login_em
     </form>
 
     <div class="link">
-        Pas de compte ? <a href="signup.php">S'inscrire</a>
+        Pas de compte ? <a href="<?= BASE_URL ?>/signup">S'inscrire</a>
     </div>
 </div>
-<script src="validation.js"></script>
+<script src="<?= BASE_URL ?>/public/assets/js/validation.js"></script>
 </body>
 </html>
