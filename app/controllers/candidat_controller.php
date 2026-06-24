@@ -55,3 +55,11 @@ function modifier_profil()
     header('Location: ' . BASE_URL . '/profile');
     exit;
 }
+
+// GET /candidat — Espace candidat (dashboard, test ou résultat selon ?page=)
+function page_candidat()
+{
+    verifier_candidat();
+
+    afficher_vue('candidat/pageCandidat');
+}

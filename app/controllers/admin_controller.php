@@ -59,3 +59,11 @@ function deconnecter_admin()
     header('Location: ' . BASE_URL . '/admin/login');
     exit;
 }
+
+// GET /admin/jeux/creer — Formulaire de création d'un jeu de logique
+function page_creer_jeu()
+{
+    verifier_admin();
+
+    afficher_vue('admin/formulaireDeCreationJeux');
+}
