@@ -42,7 +42,7 @@
 
     <div class="link">
         Pas de compte ?
-        <a href="<?= BASE_URL ?>/public/index.php/signup">S'inscrire</a>
+        <a href="<?= BASE_URL ?>/signup">S'inscrire</a>
     </div>
 
 </div>
