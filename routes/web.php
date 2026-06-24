@@ -26,6 +26,8 @@ elseif  ($methode === 'GET'  && $url === '/admin/login')  page_connexion_admin()
 elseif  ($methode === 'POST' && $url === '/admin/login')  traiter_connexion_admin();
 elseif  ($methode === 'GET'  && $url === '/admin/logout') deconnecter_admin();
 elseif  ($methode === 'GET'  && $url === '/admin')        tableau_de_bord();
+elseif  ($methode === 'GET'  && $url === '/candidat')     page_candidat();
+elseif  ($methode === 'GET'  && $url === '/admin/jeux/creer') page_creer_jeu();
 else {
     http_response_code(404);
     echo '<h1>404 – Page non trouvée</h1>';
