@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Créer un exercice – CodeWarden</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/FormulaireJeux.css">
 </head>
 <body>
@@ -88,31 +88,31 @@ document.getElementById("nbquestions").addEventListener("change", function() {
                 <h3>Question ${i}</h3>
 
                 <div class="form-group">
-                    <label>Intitulé</label>
-                    <textarea name="question_intitule_${i}" rows="2" required></textarea>
+                    <label for="question_intitule_${i}">Intitulé</label>
+                    <textarea id="question_intitule_${i}" name="question_intitule_${i}" rows="2" required></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Image (optionnel)</label>
-                    <input type="file" name="question_image_${i}[]" accept="image/*,.pdf,.png,.jpg,.jpeg,.zip">
+                    <label for="question_image_${i}">Image (optionnel)</label>
+                    <input type="file" id="question_image_${i}" name="question_image_${i}[]" accept="image/*,.pdf,.png,.jpg,.jpeg,.zip">
                 </div>
 
                 <div class="form-group">
-                    <label>Points</label>
-                    <input type="number" name="question_points_${i}" min="1" required>
+                    <label for="question_points_${i}">Points</label>
+                    <input type="number" id="question_points_${i}" name="question_points_${i}" min="1" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Type</label>
-                    <select name="question_type_${i}">
+                    <label for="question_type_${i}">Type</label>
+                    <select id="question_type_${i}" name="question_type_${i}">
                         <option value="texte">Réponse texte</option>
                         <option value="qcm">QCM</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Bonne réponse (si QCM)</label>
-                    <input type="text" name="question_bonne_${i}">
+                    <label for="question_bonne_${i}">Bonne réponse (si QCM)</label>
+                    <input type="text" id="question_bonne_${i}" name="question_bonne_${i}">
                 </div>
             </div>
         `;

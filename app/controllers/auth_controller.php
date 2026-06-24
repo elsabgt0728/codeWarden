@@ -5,7 +5,7 @@
 function page_connexion()
 {
     if (isset($_SESSION['id_candidat'])) {
-        header('Location: ' . BASE_URL . '/profile');
+        header('Location: ' . BASE_URL . '/candidat');
         exit;
     }
 
@@ -45,7 +45,7 @@ function traiter_connexion()
 
     session_regenerate_id(true); // Sécurité : renouvelle l'ID de session à chaque connexion
     $_SESSION['id_candidat'] = $user['id_candidat'];
-    header('Location: ' . BASE_URL . '/profile');
+    header('Location: ' . BASE_URL . '/candidat');
     exit;
 }
 
@@ -53,7 +53,7 @@ function traiter_connexion()
 function page_inscription()
 {
     if (isset($_SESSION['id_candidat'])) {
-        header('Location: ' . BASE_URL . '/profile');
+        header('Location: ' . BASE_URL . '/candidat');
         exit;
     }
 

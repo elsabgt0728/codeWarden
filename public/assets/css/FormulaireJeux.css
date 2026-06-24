@@ -1,3 +1,11 @@
+/* Fond bleu : sans lui le texte blanc serait invisible sur fond blanc */
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background: #00a2ff;
+  font-family: Arial, sans-serif;
+}
 
 .form-title {
   text-align: center;
@@ -28,12 +36,11 @@
 .form-group label {
   font-size: 13px;
   font-weight: 600;
-  color: #00a2ff;
+  color: #ffffff; /* blanc : contraste suffisant sur la carte bleutée */
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 1px;
   display: block;
-  opacity: 0.9;
 }
 
 
@@ -90,4 +97,24 @@
   margin-bottom: 12px;
   font-size: 18px;
   letter-spacing: 1px;
+}
+
+/* FOCUS CLAVIER (accessibilité) */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .form-card {
+    width: 100%;
+    padding: 20px;
+  }
+  .form-title {
+    font-size: 22px;
+  }
 }

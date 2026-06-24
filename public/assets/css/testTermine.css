@@ -163,3 +163,42 @@ body {
         .btnStart .logo{
             height: 2rem;
         }
+
+/* FOCUS CLAVIER (accessibilité) */
+a:focus-visible,
+button:focus-visible {
+    outline: 3px solid #1D4ED8;
+    outline-offset: 2px;
+}
+
+/* RESPONSIVE — tablette */
+@media (max-width: 900px) {
+    .success-card {
+        width: 85%;
+        padding: 2rem;
+    }
+}
+
+/* RESPONSIVE — mobile */
+@media (max-width: 600px) {
+    .container {
+        padding: 1rem;
+    }
+    .success-card {
+        width: 100%;
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+    .success-icon {
+        width: 90px;
+        height: 90px;
+        font-size: 44px;
+    }
+    .success-title {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+    .detail-box {
+        grid-template-columns: 1fr;
+    }
+}
