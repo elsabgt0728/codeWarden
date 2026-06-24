@@ -129,6 +129,7 @@ header {
   box-shadow: 0 8px 20px rgba(0,0,0,0.25);
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-decoration: none;
 }
 .create-exo-btn:hover {
   background: #f0f0f0;
@@ -240,4 +241,102 @@ footer {
   line-height: 20px;
   text-align: center;
   font-size: 11px;
+}
+
+
+.form-title {
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 20px;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+
+.form-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 20px;
+  width: 450px;
+  margin: 0 auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  backdrop-filter: blur(6px);
+}
+
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #00a2ff;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  opacity: 0.9;
+}
+
+
+
+.form-group input,
+.form-group select,
+.form-group textarea{
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 15px;
+  outline: none;
+  background: #fff;
+  color: #333;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  box-shadow: 0 0 0 3px rgba(0,162,255,0.4);
+}
+
+
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: #ffffff;
+  color: #00a2ff;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.btn-submit:hover {
+  background: #f0f0f0;
+}
+
+.question-block {
+  background: rgba(255,255,255,0.12);
+  padding: 20px;
+  border-radius: 16px;
+  margin-top: 25px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.question-block h3 {
+  color: #fff;
+  margin-bottom: 12px;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+#questions-container {
+    margin-bottom: 10px; 
 }

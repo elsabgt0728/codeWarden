@@ -1,4 +1,11 @@
 <?php
+    $page = $_GET['page'] ?? 'exercices';
+
+if ($page === 'creer_exercice_traitement') {
+    require_once ROOT . '/app/controllers/jeux_controller.php';
+     traiter_creation_jeux();
+    exit;
+}
 // Connexion et tableau de bord admin
 
 // GET /admin/login — Affiche la page de connexion admin
@@ -43,14 +50,38 @@ function traiter_connexion_admin()
     exit;
 }
 
-// GET /admin — Tableau de bord
+
 function tableau_de_bord()
 {
     verifier_admin();
 
-    $page = isset($_GET['page']) ? $_GET['page'] : 'exercices';
-    afficher_vue('admin/dashboard', ['page' => $page]);
+    $page = $_GET['page'] ?? 'exercices';
+
+    // PAGE : CREER EXERCICE
+    if ($page === 'creer_exercice') {
+
+        require_once ROOT . '/app/models/jeux.php';
+
+        // Récupération des ENUM
+        $types = jeux_recuperer_types();
+        $difficultes = jeux_recuperer_difficultes();
+
+        // Envoi à la vue
+        afficher_vue('admin/dashboard', [
+            'page' => $page,
+            'types' => $types,
+            'difficultes' => $difficultes
+        ]);
+
+        return;
+    }
+
+    // AUTRES PAGES
+    afficher_vue('admin/dashboard', [
+        'page' => $page
+    ]);
 }
+
 
 // GET /admin/logout — Déconnecte l'admin
 function deconnecter_admin()
@@ -60,10 +91,4 @@ function deconnecter_admin()
     exit;
 }
 
-// GET /admin/jeux/creer — Formulaire de création d'un jeu de logique
-function page_creer_jeu()
-{
-    verifier_admin();
 
-    afficher_vue('admin/formulaireDeCreationJeux');
-}
