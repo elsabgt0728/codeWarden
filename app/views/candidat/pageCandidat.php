@@ -9,11 +9,11 @@ $page = $_GET["page"] ?? "dashboard";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
       <?php if ($page === "dashboard"): ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/accesAuTest.css">
+        <link rel="stylesheet" href="accesAuTest.css">
     <?php elseif ($page === "test"): ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/progression.css">
+        <link rel="stylesheet" href="progression.css">
     <?php else: ?>
-        <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/testTermine.css">
+        <link rel="stylesheet" href="testTermine.css">
     <?php endif; ?>
 </head>
 <body>
@@ -24,7 +24,7 @@ if($page === "dashboard"):
     <header>
 
     <div class="partgauche">
-    <div class="logo"><img src="<?= BASE_URL ?>/public/assets/images/CWL.png" alt=""></div>
+    <div class="logo"><img src="CWL.png" alt=""></div>
         <div class="textheader">
     <h1>Plateforme admission</h1>
     <h2>Espace candidat</h2>
@@ -38,7 +38,7 @@ if($page === "dashboard"):
     <strong>Nom (on recupera en php plutard)</strong>
         </div>
      <button>
-       <div class="icone"><img src="<?= BASE_URL ?>/public/assets/images/icone deconnexion.png" alt=""></div> Déconnexion
+       <div class="icone"><img src="icone deconnexion.png" alt=""></div> Déconnexion
     </button>
     </div>
 
@@ -62,7 +62,7 @@ if($page === "dashboard"):
 
     <div class="entete">
         
-        <div class="logo"><img src="<?= BASE_URL ?>/public/assets/images/icone feuille.png" alt=""></div>
+        <div class="logo"><img src="icone feuille.png" alt=""></div>
     <div class="textcard">
         <h3>Accéder au test</h3>
         <h4>Test d'admission 2026</h4>
@@ -73,7 +73,7 @@ if($page === "dashboard"):
 
     <div class="autorisation">
 
-    <div class="coche"><div class="icone"><img src="<?= BASE_URL ?>/public/assets/images/icone coche.png" alt=""></div> </div>
+    <div class="coche"><div class="icone"><img src="icone coche.png" alt=""></div> </div>
 
         <div class="textauto">
         <h3>Accès autorisé</h3>
@@ -205,7 +205,7 @@ elseif($page === "finish"):
 
         <div class="info-box">
             <div class="info-row">
-                <div class="logo"><img src="<?= BASE_URL ?>/public/assets/images/check.png" alt=""></div>
+                <div class="logo"><img src="check.png" alt=""></div>
                 <div class="info-text">
                     <h3>Votre test est enregistré</h3>
                     <p>Toutes vos réponses ont été sauvegardées et sont en cours de traitement.</p>
@@ -213,7 +213,7 @@ elseif($page === "finish"):
             </div>
 
             <div class="info-row">
-                <div class="logo"><img src="<?= BASE_URL ?>/public/assets/images/enveloppe.png" alt=""></div>
+                <div class="logo"><img src="enveloppe.png" alt=""></div>
                 <div class="info-text">
                     <h3>Résultats par email</h3>
                     <p>Vous recevrez vos résultats par email dans un délai de 48 heures maximum.</p>
@@ -245,7 +245,7 @@ elseif($page === "finish"):
         </div>
 
         <div class="btn-box">
-        <button class="btnStart"> <div class="logo"><img src="<?= BASE_URL ?>/public/assets/images/deconnexion1.png" alt=""></div> Quitter la page</button>
+        <button class="btnStart"> <div class="logo"><img src="deconnexion1.png" alt=""></div> Quitter la page</button>
         </div>
 
         <div class="footer-text">

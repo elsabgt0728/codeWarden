@@ -97,15 +97,15 @@ main {
 .container {
     background: #fff;
     width: 65%;
-    height: 45vh;
+    height: auto;
     border-radius: 20px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.25);
     font-size: 1rem;
-    overflow-y: auto;
+    overflow-y: hidden;
 }
 
 .contenu {
-    padding: 2rem;
+    padding: 1rem;
 }
 
 
