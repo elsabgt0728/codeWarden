@@ -40,7 +40,7 @@
     </form>
 
     <div class="link">
-        Déjà inscrit ? <a href="<?= BASE_URL ?>/">Se connecter</a>
+        Déjà inscrit ? <a href="<?= BASE_URL ?>/login">Se connecter</a>
     </div>
 </div>
 <script src="<?= BASE_URL ?>/public/assets/js/validation.js"></script>

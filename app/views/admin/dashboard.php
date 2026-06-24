@@ -2,24 +2,25 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CodeWarden – Administration</title>
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/CodeWardenAdminCSS.css">
 </head>
 <body>
 
 <header>
-    <div class="header-inner">
+    <nav class="header-inner" aria-label="Navigation principale">
         <div class="nav-group">
-            <a class="navbar-link <?= $page === 'exercices'    ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=exercices">Exercices</a>
-            <a class="navbar-link <?= $page === 'tests'        ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=tests">Tests</a>
+            <a class="navbar-link <?= $page === 'exercices'    ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=exercices"<?= $page === 'exercices' ? ' aria-current="page"' : '' ?>>Exercices</a>
+            <a class="navbar-link <?= $page === 'tests'        ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=tests"<?= $page === 'tests' ? ' aria-current="page"' : '' ?>>Tests</a>
         </div>
         <div class="header-logo">CodeWarden</div>
         <div class="nav-group">
-            <a class="navbar-link <?= $page === 'etudiants'    ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=etudiants">Étudiants</a>
-            <a class="navbar-link <?= $page === 'statistiques' ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=statistiques">Statistiques</a>
+            <a class="navbar-link <?= $page === 'etudiants'    ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=etudiants"<?= $page === 'etudiants' ? ' aria-current="page"' : '' ?>>Étudiants</a>
+            <a class="navbar-link <?= $page === 'statistiques' ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=statistiques"<?= $page === 'statistiques' ? ' aria-current="page"' : '' ?>>Statistiques</a>
             <a class="navbar-link" href="<?= BASE_URL ?>/admin/logout">Déconnexion</a>
         </div>
-    </div>
+    </nav>
 </header>
 
 <div class="layout">
@@ -61,7 +62,7 @@
                 <div class="table-container">
                     <table>
                         <thead>
-                            <tr><th>Nom</th><th>Prénom</th><th>Groupe</th><th>Exercices</th><th>Moyenne</th><th>Statut</th></tr>
+                            <tr><th scope="col">Nom</th><th scope="col">Prénom</th><th scope="col">Groupe</th><th scope="col">Exercices</th><th scope="col">Moyenne</th><th scope="col">Statut</th></tr>
                         </thead>
                         <tbody>
                             <tr><td>Dupont</td><td>Alice</td><td>Groupe A</td><td>12</td><td>15/20</td><td><span class="badge badge-green">Actif</span></td></tr>
@@ -78,7 +79,7 @@
                 <div class="table-container">
                     <table>
                         <thead>
-                            <tr><th>Exercice</th><th>Réussite</th><th>Tentatives</th><th>Moyenne</th></tr>
+                            <tr><th scope="col">Exercice</th><th scope="col">Réussite</th><th scope="col">Tentatives</th><th scope="col">Moyenne</th></tr>
                         </thead>
                         <tbody>
                             <tr><td>Exercice 1</td><td><span class="badge badge-green">87%</span></td><td>45</td><td>14.2/20</td></tr>
