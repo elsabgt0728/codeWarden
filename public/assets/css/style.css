@@ -5,12 +5,19 @@
     padding: 0;
 }
 
+/* Empêche Edge/Chrome dark-mode d'écraser les couleurs */
+:root {
+    color-scheme: only light;
+}
+
 /* PAGE */
 body {
     font-family: Arial, sans-serif;
     background: #00a2ff; /* bleu principal */
+    min-height: 100vh;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
     padding: 3rem 1rem;
     color: #fff;
 }

@@ -1,7 +1,21 @@
 <?php
 // Connexion, inscription et déconnexion des candidats
 
-// GET / — Affiche la page de connexion
+// GET / — Page d'accueil publique
+function page_accueil()
+{
+    if (isset($_SESSION['id_candidat'])) {
+        header('Location: ' . BASE_URL . '/candidat');
+        exit;
+    }
+    if (isset($_SESSION['id_admin'])) {
+        header('Location: ' . BASE_URL . '/admin');
+        exit;
+    }
+    afficher_vue('landing');
+}
+
+// GET /login — Affiche le formulaire de connexion
 function page_connexion()
 {
     if (isset($_SESSION['id_candidat'])) {
@@ -30,7 +44,7 @@ function traiter_connexion()
     if ($email === '' || $motDePasse === '') {
         $_SESSION['login_error'] = 'Veuillez remplir tous les champs.';
         $_SESSION['login_email'] = $email;
-        header('Location: ' . BASE_URL . '/');
+        header('Location: ' . BASE_URL . '/login');
         exit;
     }
 
@@ -39,7 +53,7 @@ function traiter_connexion()
     if ($user === false || !password_verify($motDePasse, $user['password'])) {
         $_SESSION['login_error'] = 'E-mail ou mot de passe incorrect.';
         $_SESSION['login_email'] = $email;
-        header('Location: ' . BASE_URL . '/');
+        header('Location: ' . BASE_URL . '/login');
         exit;
     }
 
@@ -115,7 +129,7 @@ function traiter_inscription()
     // On ne stocke jamais un mot de passe en clair — on le hache avec bcrypt
     creer_candidat($nom, $prenom, $email, password_hash($motDePasse, PASSWORD_BCRYPT));
     $_SESSION['signup_success'] = 'Compte créé. Vous pouvez vous connecter.';
-    header('Location: ' . BASE_URL . '/');
+    header('Location: ' . BASE_URL . '/login');
     exit;
 }
 
@@ -124,5 +138,5 @@ function deconnecter()
 {
     session_destroy();
     header('Location: ' . BASE_URL . '/');
-    exit;
+    exit; // retour à la landing page
 }
