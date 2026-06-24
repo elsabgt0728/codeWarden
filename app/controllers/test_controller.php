@@ -4,7 +4,7 @@ function traiter_creation_test()
 {
     verifier_admin();
 
-    require_once ROOT . '/app/models/tests.php';
+    require_once ROOT . '/app/models/test.php';
     require_once ROOT . '/app/models/session.php';
     require_once ROOT . '/app/models/convocation.php';
 
@@ -39,8 +39,4 @@ function traiter_creation_test()
     // 5) Redirection
     header("Location: " . BASE_URL . "/admin?page=tests&success=1");
     exit;
-}
-
-if ($_GET['action'] === 'creer') {
-    traiter_creation_test();
 }

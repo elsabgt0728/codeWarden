@@ -260,6 +260,11 @@ elseif($page === "finish"):
 </div>
 
 <?php endif ?>
+<script>
+    const testData = <?= json_encode($contenu, JSON_UNESCAPED_UNICODE) ?>;
+</script>
+<script src="<?= BASE_URL ?>/public/js/test.js"></script>
 
 </body>
+
 </html>

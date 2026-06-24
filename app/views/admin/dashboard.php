@@ -148,7 +148,8 @@
 
         <h2>Créer un test</h2>
 
-        <form action="<?= BASE_URL ?>/app/controllers/test_controller.php?action=creer" method="POST">
+        <form action="<?= BASE_URL ?>/admin?page=creer_test_traitement" method="POST">
+
 
             <div class="form-group">
                 <label for="titre_test">Titre du test</label>

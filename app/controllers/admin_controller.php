@@ -6,6 +6,13 @@ if ($page === 'creer_exercice_traitement') {
      traiter_creation_jeux();
     exit;
 }
+
+if ($page === 'creer_test_traitement') {
+    require_once ROOT . '/app/controllers/test_controller.php';
+    traiter_creation_test();
+    exit;
+}
+
 // Connexion et tableau de bord admin
 
 // GET /admin/login — Affiche la page de connexion admin
@@ -75,6 +82,26 @@ function tableau_de_bord()
 
         return;
     }
+
+    if ($page === 'creer_test') {
+
+    require_once ROOT . '/app/models/jeux.php';
+    require_once ROOT . '/app/models/candidat.php';
+
+    // Récupérer les jeux actifs
+    $jeux = jeux_tous_actifs();
+
+    // Récupérer les candidats actifs
+    $candidats = candidats_tous_actifs();
+
+    afficher_vue('admin/dashboard', [
+        'page' => $page,
+        'jeux' => $jeux,
+        'candidats' => $candidats
+    ]);
+
+    return;
+}
 
     // AUTRES PAGES
     afficher_vue('admin/dashboard', [

@@ -1,5 +1,33 @@
 <?php
-// Pages de l'espace personnel du candidat
+$page = $_GET['page'] ?? 'dashboard';
+
+
+if ($page === 'test') {
+
+    $id_test = $_GET['id_test'] ?? null;
+
+    if (!$id_test) {
+        die("Aucun test sélectionné.");
+    }
+
+    require_once ROOT . '/app/models/test.php';
+    $test = test_recuperer_par_id($id_test);
+
+    if (!$test) {
+        die("Test introuvable.");
+    }
+
+    // On décode le JSON du test
+    $contenu = json_decode($test['contenu_json'], true);
+
+    afficher_vue('pageCandidat', [
+        'contenu' => $contenu
+    ]);
+
+    return;
+}
+
+
 
 // GET /profile — Affiche le profil
 function page_profil()
@@ -63,3 +91,5 @@ function page_candidat()
 
     afficher_vue('candidat/pageCandidat');
 }
+
+

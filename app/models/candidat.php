@@ -46,3 +46,4 @@ function candidats_tous_actifs()
     $stmt = $db->query("SELECT * FROM CANDIDAT WHERE statut = 'actif'");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
