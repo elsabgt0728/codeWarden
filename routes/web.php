@@ -1,12 +1,16 @@
 <?php
 // Calcule l'URL demandée sans le préfixe /codewarden
 $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-if (strpos($url, BASE_URL) === 0) {
-    $url = substr($url, strlen(BASE_URL));
-}
-$url = '/' . ltrim($url, '/');
-if ($url !== '/') {
-    $url = rtrim($url, '/');
+
+// enlever /codewarden/public
+$url = str_replace(BASE_URL, '', $url);
+
+// enlever index.php
+$url = str_replace('/index.php', '', $url);
+
+// si vide → racine
+if ($url === '' || $url === false) {
+    $url = '/';
 }
 
 $methode = $_SERVER['REQUEST_METHOD'];
