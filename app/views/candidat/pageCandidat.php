@@ -529,7 +529,7 @@ elseif($page === "test"):
         <div class="under-container">
 
              <div class="question-nav">
-                <button class="btn-nav"> < précédent </button>
+                <button class="btn-nav"> précédent </button>
                 <button class="btn-nav"> suivant > </button>
             </div>
 
@@ -550,7 +550,7 @@ elseif($page === "test"):
     const BASE_URL = "<?= BASE_URL ?>";
         </script>
 
-        <script src="<?= BASE_URL ?>/public/js/test.js"></script>
+     <!-- script externe désactivé pour debug -->
         
     <footer>
 
@@ -632,16 +632,18 @@ elseif($page === "finish"):
 </div>
 
 <?php endif ?>
+
 <script>
-    const testData = {
-        questions: <?= json_encode($questions, JSON_UNESCAPED_UNICODE) ?>
-    };
+    const BASE_URL = "<?= BASE_URL ?>";
 </script>
+<script src="<?= BASE_URL ?>/public/assets/js/test.js"></script>
+
+
+
 
 </body>
 
 </html>
-        </script>
 
     <footer>
 
