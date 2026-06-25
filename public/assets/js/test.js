@@ -129,3 +129,16 @@ function updateTimer() {
 setInterval(updateTimer, 1000);
 updateTimer();
 
+if (timeLeft <= 0) {
+    fetch(BASE_URL + "/candidat?page=expire", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            id_passage: ID_PASSAGE,
+            id_test: ID_TEST
+        })
+    }).then(() => {
+        window.location.href = BASE_URL + "/candidat?page=finish&id_passage=" + ID_PASSAGE;
+    });
+}
+
