@@ -1,6 +1,6 @@
 <?php
+    function page_candidat(){
 $page = $_GET['page'] ?? 'dashboard';
-
 
 if ($page === 'test') {
 
@@ -11,21 +11,45 @@ if ($page === 'test') {
     }
 
     require_once ROOT . '/app/models/test.php';
+
+    // 1) Récupérer le test
     $test = test_recuperer_par_id($id_test);
 
     if (!$test) {
         die("Test introuvable.");
     }
 
-    // On décode le JSON du test
-    $contenu = json_decode($test['contenu_json'], true);
+    // 2) Récupérer les jeux du test
+    $jeux = test_recuperer_jeux($id_test);
 
-    afficher_vue('pageCandidat', [
-        'contenu' => $contenu
+    // 3) Fusionner toutes les questions
+    $questions = [];
+
+    if (!empty($jeux)) {
+        foreach ($jeux as $jeu) {
+
+            if (!empty($jeu['contenu_json'])) {
+
+                $json = json_decode($jeu['contenu_json'], true);
+
+                if (!empty($json['questions'])) {
+                    foreach ($json['questions'] as $q) {
+                        $questions[] = $q;
+                    }
+                }
+            }
+        }
+    }
+
+    // 4) Envoyer à la vue
+    afficher_vue('candidat/pageCandidat', [
+        'questions' => $questions
     ]);
 
     return;
+    }
 }
+
 
 
 
@@ -82,14 +106,6 @@ function modifier_profil()
     $_SESSION['profile_success'] = 'Profil mis à jour.';
     header('Location: ' . BASE_URL . '/profile');
     exit;
-}
-
-// GET /candidat — Espace candidat (dashboard, test ou résultat selon ?page=)
-function page_candidat()
-{
-    verifier_candidat();
-
-    afficher_vue('candidat/pageCandidat');
 }
 
 

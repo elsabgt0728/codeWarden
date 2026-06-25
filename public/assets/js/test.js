@@ -1,57 +1,95 @@
-let index = 0;
+let current = 0;
 
-function afficherQuestion() {
-    const question = testData.questions[index];
-    const container = document.querySelector('.contenu');
+const questions = document.querySelectorAll('.question');
+const btnPrev = document.querySelector('.question-nav .btn-nav:first-child');
+const btnNext = document.querySelector('.question-nav .btn-nav:last-child');
+const boxes = document.getElementById('box-container');
+const progress = document.getElementById('progres');
+const count = document.getElementById('count');
+const submitBtn = document.getElementById('submit');
 
-    let html = `
-        <div class="question">
-            <h2>${question.intitule}</h2>
-            <div class="propositions">
-    `;
+// Génération des cases numérotées
+questions.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.classList.add('question-box');
+    if (i === 0) div.classList.add('active');
+    div.textContent = i + 1;
+    div.dataset.index = i;
+    boxes.appendChild(div);
+});
 
-    question.propositions.forEach((p, i) => {
-        if (p.type === "texte") {
-            html += `
-                <label class="prop">
-                    <input type="radio" name="q${index}" value="${i}">
-                    ${p.label}
-                </label>
-            `;
-        } else {
-            html += `
-                <label class="prop">
-                    <input type="radio" name="q${index}" value="${i}">
-                    <img src="${BASE_URL}/${p.src}" alt="image">
-                </label>
-            `;
-        }
+// Vérifie si toutes les questions ont une réponse
+function checkCompletion() {
+    let answered = 0;
+
+    questions.forEach((q, i) => {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        if (selected) answered++;
     });
 
-    html += `
-            </div>
-        </div>
-    `;
+    // Activer / désactiver le bouton Soumettre
+    submitBtn.disabled = answered !== questions.length;
 
-    container.innerHTML = html;
-
-    // Mise à jour progression
-    document.getElementById("count").textContent = Math.round(((index+1) / testData.nbquestions) * 100);
+    // Mise à jour de la barre de progression
+    let percent = Math.round((answered / questions.length) * 100);
+    progress.style.width = percent + "%";
+    count.textContent = percent;
 }
 
-document.querySelector('.btn-nav:nth-child(1)').addEventListener('click', () => {
-    if (index > 0) {
-        index--;
-        afficherQuestion();
+// Mise à jour affichage navigation
+function updateDisplay() {
+    questions.forEach((q, i) => {
+        q.style.display = (i === current) ? 'block' : 'none';
+    });
+
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current === questions.length - 1;
+
+    document.querySelectorAll('.question-box').forEach(box => {
+        box.classList.remove('active');
+        if (parseInt(box.dataset.index) === current) {
+            box.classList.add('active');
+        }
+    });
+}
+
+// Navigation boutons
+btnNext.addEventListener('click', () => {
+    if (current < questions.length - 1) {
+        current++;
+        updateDisplay();
     }
 });
 
-document.querySelector('.btn-nav:nth-child(2)').addEventListener('click', () => {
-    if (index < testData.nbquestions - 1) {
-        index++;
-        afficherQuestion();
+btnPrev.addEventListener('click', () => {
+    if (current > 0) {
+        current--;
+        updateDisplay();
     }
 });
 
-// Chargement initial
-afficherQuestion();
+// Navigation via les cases numérotées
+document.querySelectorAll('.question-box').forEach(box => {
+    box.addEventListener('click', () => {
+        current = parseInt(box.dataset.index);
+        updateDisplay();
+    });
+});
+
+// Quand l’utilisateur sélectionne une réponse
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+        checkCompletion();
+    });
+});
+
+// Redirection quand le test est terminé
+submitBtn.addEventListener('click', () => {
+    if (!submitBtn.disabled) {
+        window.location.href = BASE_URL + "/candidat?page=finish";
+    }
+});
+
+// Initialisation
+updateDisplay();
+checkCompletion();
