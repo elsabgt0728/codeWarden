@@ -39,3 +39,11 @@ function modifier_candidat($id, $nom, $prenom, $email)
     $req = $db->prepare('UPDATE candidat SET nom = ?, prenom = ?, email = ? WHERE id_candidat = ?');
     $req->execute([$nom, $prenom, $email, $id]);
 }
+
+function candidats_tous_actifs()
+{
+    $db = connecter_bdd();
+    $stmt = $db->query("SELECT * FROM CANDIDAT WHERE statut = 'actif'");
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
