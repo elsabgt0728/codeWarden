@@ -216,6 +216,26 @@ main {
     text-decoration: none;
 }
 
+.question-box.answered,
+.question-box.answered.active {
+    background: #4CAF50 !important;
+    color: white !important;
+    border: none !important;
+}
+
+
+.question-box.answered {
+    animation: pop 0.25s ease-out;
+}
+
+@keyframes pop {
+    0% { transform: scale(0.8); }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+
+
 .submit:hover {
     background: #00b44a;
     transform: translateY(-2px);

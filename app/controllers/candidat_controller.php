@@ -1,6 +1,15 @@
 <?php
-    function page_candidat(){
+
+require_once ROOT . "/app/models/test.php";
+
+
+function page_candidat(){
+
 $page = $_GET['page'] ?? 'dashboard';
+
+verifier_candidat(); 
+$user = trouver_candidat_par_id($_SESSION["id_candidat"]);
+
 
 if ($page === 'test') {
 
@@ -43,13 +52,131 @@ if ($page === 'test') {
 
     // 4) Envoyer à la vue
     afficher_vue('candidat/pageCandidat', [
-        'questions' => $questions
+        'questions' => $questions,
+        'duree' => $test['duree_minutes'],
+        "user" => $user
     ]);
 
     return;
     }
+
+    if ($page === 'finish') {
+     // PAGE FINISH
+    afficher_vue("candidat/pageCandidat", [
+    "user" => $user
+]);
+    }
+
+    if ($page === 'dashboard') {
+   afficher_vue("candidat/pageCandidat", [
+    "user" => $user
+]);
+
 }
 
+if ($page === "finish") {
+    candidat_afficher_finish();
+    return;
+}
+
+    }
+
+
+function candidat_terminer_test()
+{
+    verifier_candidat();
+
+    require_once ROOT . '/app/models/passage_test.php';
+    require_once ROOT . '/app/models/resultat.php';
+    require_once ROOT . '/app/models/test.php';
+
+    $id_passage = $_POST['id_passage'] ?? null;
+    $id_test    = $_POST['id_test'] ?? null;
+    $reponses   = $_POST['reponses'] ?? null;
+
+    if (!$id_passage || !$id_test || !$reponses) {
+        die("Requête invalide.");
+    }
+
+    // Charger les questions
+    $jeux = test_recuperer_jeux($id_test);
+    $questions = [];
+
+    foreach ($jeux as $jeu) {
+        $json = json_decode($jeu['contenu_json'], true);
+        foreach ($json['questions'] as $q) {
+            $questions[] = $q;
+        }
+    }
+
+    // Calcul du score
+    $score = 0;
+    foreach ($questions as $i => $q) {
+        if (isset($reponses[$i]) && $reponses[$i] == $q['bonne_reponse']) {
+            $score++;
+        }
+    }
+
+    // Mettre à jour PASSAGE_TEST
+    terminer_passage_test($id_passage, $score);
+
+    // Créer RESULTAT
+    creer_resultat($id_passage, $score);
+
+    // Redirection
+    header("Location: " . BASE_URL . "/candidat?page=finish&id_passage=$id_passage");
+    exit;
+}
+
+function candidat_afficher_finish()
+{
+    verifier_candidat();
+
+    require_once ROOT . '/app/models/passageTest.php';
+    require_once ROOT . '/app/models/resultat.php';
+
+    $id_passage = $_GET['id_passage'] ?? null;
+    if (!$id_passage) {
+        die("Passage introuvable.");
+    }
+
+    $user = trouver_candidat_par_id($_SESSION['id_candidat']);
+    $passage = passage_test_par_id($id_passage);
+    $resultat = resultat_par_passage($id_passage);
+
+    afficher_vue('candidat/pageCandidat', [
+        'user' => $user,
+        'passage' => $passage,
+        'resultat' => $resultat
+    ]);
+}
+
+function candidat_expire_test()
+{
+    verifier_candidat();
+
+    require_once ROOT . '/app/models/passage_test.php';
+    require_once ROOT . '/app/models/resultat.php';
+
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    $id_passage = $data["id_passage"] ?? null;
+    $id_test    = $data["id_test"] ?? null;
+
+    if (!$id_passage || !$id_test) {
+        http_response_code(400);
+        exit("Requête invalide.");
+    }
+
+    // Mettre PASSAGE_TEST en expire
+    passage_test_expire($id_passage);
+
+    // Créer un résultat score = 0
+    creer_resultat($id_passage, 0);
+
+    echo "OK";
+    exit;
+}
 
 
 
@@ -125,3 +252,5 @@ function modifier_profil()
     header('Location: ' . BASE_URL . '/profile');
     exit;
 }
+
+

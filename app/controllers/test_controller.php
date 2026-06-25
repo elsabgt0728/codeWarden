@@ -40,3 +40,57 @@ function traiter_creation_test()
     header("Location: " . BASE_URL . "/admin?page=tests&success=1");
     exit;
 }
+
+function candidat_commencer_test()
+{
+    verifier_candidat();
+
+    require_once ROOT . '/app/models/test.php';
+    require_once ROOT . '/app/models/passage_test.php';
+    require_once ROOT . '/app/models/session.php';
+
+    $id_test = $_GET['id_test'] ?? null;
+    if (!$id_test) {
+        die("Aucun test sélectionné.");
+    }
+
+    $user = trouver_candidat_par_id($_SESSION['id_candidat']);
+
+    // Récupérer la session active du test
+    $session = session_recuperer_par_test($id_test);
+    if (!$session) {
+        die("Aucune session active pour ce test.");
+    }
+
+    $id_session = $session['id_session'];
+
+    // Vérifier si un passage existe déjà
+    $passage = passage_test_en_cours($_SESSION['id_candidat'], $id_session);
+
+    if (!$passage) {
+        // Créer un nouveau passage
+        $id_passage = creer_passage_test($_SESSION['id_candidat'], $id_session);
+    } else {
+        $id_passage = $passage['id_passage_test'];
+    }
+
+    // Charger les questions
+    $test = test_recuperer_par_id($id_test);
+    $jeux = test_recuperer_jeux($id_test);
+
+    $questions = [];
+    foreach ($jeux as $jeu) {
+        $json = json_decode($jeu['contenu_json'], true);
+        foreach ($json['questions'] as $q) {
+            $questions[] = $q;
+        }
+    }
+
+    afficher_vue('candidat/pageCandidat', [
+        'questions' => $questions,
+        'duree' => $test['duree_minutes'],
+        'id_passage' => $id_passage,
+        'user' => $user
+    ]);
+}
+
