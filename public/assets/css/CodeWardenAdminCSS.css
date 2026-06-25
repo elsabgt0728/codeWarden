@@ -1,3 +1,4 @@
+:root { color-scheme: only light; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -339,4 +340,59 @@ footer {
 
 #questions-container {
     margin-bottom: 10px; 
+}
+/* FOCUS CLAVIER (accessibilité) */
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Permet le défilement horizontal des tableaux sur petit écran */
+.table-container {
+  overflow-x: auto;
+}
+
+/* RESPONSIVE — tablette */
+@media (max-width: 900px) {
+  .header-inner {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+  .header-logo {
+    order: -1;
+    padding: 6px 16px;
+  }
+  .layout {
+    flex-direction: column;
+    padding: 16px 20px;
+  }
+  .sidebar {
+    width: 100%;
+  }
+}
+
+/* RESPONSIVE — mobile */
+@media (max-width: 600px) {
+  .nav-group {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .navbar-link {
+    padding: 6px 12px;
+    font-size: 0.74rem;
+  }
+  .table-wrap {
+    padding: 10px 0;
+  }
+  table {
+    font-size: 13px;
+  }
+  footer {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+    padding: 16px 20px;
+  }
 }

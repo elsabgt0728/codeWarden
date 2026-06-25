@@ -5,12 +5,19 @@
     padding: 0;
 }
 
+/* Empêche Edge/Chrome dark-mode d'écraser les couleurs */
+:root {
+    color-scheme: only light;
+}
+
 /* PAGE */
 body {
     font-family: Arial, sans-serif;
     background: #00a2ff; /* bleu principal */
+    min-height: 100vh;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
     padding: 3rem 1rem;
     color: #fff;
 }
@@ -129,14 +136,33 @@ button:hover {
 }
 
 .link a {
-    color: #ffffff;
+    color: #005c99; /* bleu foncé : contraste AA sur fond blanc */
     font-weight: bold;
     text-decoration: underline;
 }
 
+.link a:hover {
+    color: #003f6b;
+}
+
+/* FOCUS CLAVIER (accessibilité) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid #003f6b;
+    outline-offset: 2px;
+}
+
 /* RESPONSIVE */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+    body {
+        padding: 1.5rem 0.75rem;
+    }
     .container {
         padding: 1.4rem;
+        border-radius: 14px;
+    }
+    h1 {
+        font-size: 1.4rem;
     }
 }

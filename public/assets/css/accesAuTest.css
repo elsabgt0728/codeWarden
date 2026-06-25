@@ -1,3 +1,5 @@
+        :root { color-scheme: only light; }
+
         * {
             box-sizing: border-box;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -229,6 +231,7 @@
             padding: 1rem 1.5rem;
             background-color: #00a2ff;
             color: #fff;
+            text-decoration: none;
             border: none;
             border-radius: 15px;
             font-size: 1rem;
@@ -284,4 +287,267 @@
 
         .coche .icone{
             height: 2rem;
+        }
+
+        /* BOUTONS DU HEADER */
+        .btn-header {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.65rem 1.1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #fff;
+            color: #0077cc;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-header:hover {
+            background: #f0f4ff;
+        }
+
+        .btn-header--deconnexion {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            border: 1.5px solid rgba(255,255,255,0.5);
+            box-shadow: none;
+        }
+
+        .btn-header--deconnexion:hover {
+            background: rgba(255,255,255,0.28);
+        }
+
+        /* PANNEAU PROFIL (slide depuis la droite) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.40);
+            display: flex;
+            align-items: stretch;
+            justify-content: flex-end;
+            z-index: 9999;
+        }
+
+        @keyframes slideFromRight {
+            from { transform: translateX(100%); }
+            to   { transform: translateX(0); }
+        }
+
+        .modal-card {
+            background: #fff;
+            width: 88%;
+            max-width: 360px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            border-radius: 20px 0 0 20px;
+            box-shadow: -6px 0 28px rgba(0,0,0,0.18);
+            animation: slideFromRight 0.28s ease forwards;
+            color: #1f2933;
+        }
+
+        /* En-tête du panneau */
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1.4rem 1.5rem 1rem;
+            border-bottom: 1px solid #e9edf2;
+        }
+
+        .modal-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #0091e6;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .modal-header-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1f2933;
+        }
+
+        .modal-header-sub {
+            font-size: 0.78rem;
+            color: #6b7280;
+        }
+
+        /* Corps du panneau */
+        .modal-body {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .modal-card h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin: 0 0 1rem;
+        }
+
+        .modal-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .modal-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1f2933;
+            margin-bottom: 0.3rem;
+        }
+
+        .modal-group input {
+            padding: 0.65rem 0.8rem;
+            border: 1px solid #d0d7e2;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            background: #f8fbff;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-group input:focus {
+            border-color: #00a2ff;
+            box-shadow: 0 0 0 3px rgba(0,162,255,0.2);
+        }
+
+        .modal-error {
+            color: #d62828;
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
+            min-height: 1em;
+        }
+
+        .msg-profil {
+            padding: 0.7rem 1rem;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .msg-profil--ok  { background: #e5ffe9; color: #0f7a2a; border: 1px solid #8fe3a1; }
+        .msg-profil--err { background: #ffe5e5; color: #a80000; border: 1px solid #ff9b9b; }
+
+        /* Pied du panneau */
+        .modal-footer {
+            padding: 1rem 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            border-top: 1px solid #e9edf2;
+        }
+
+        .modal-btn-save {
+            width: 100%;
+            padding: 0.85rem;
+            background: #00a2ff;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-btn-save:hover { background: #008ed1; }
+
+        .modal-btn-retour {
+            width: 100%;
+            padding: 0.8rem;
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .modal-btn-retour:hover { background: #e5e7eb; }
+
+        /* FOCUS CLAVIER (accessibilité) */
+        a:focus-visible,
+        button:focus-visible {
+            outline: 3px solid #003f6b;
+            outline-offset: 2px;
+        }
+
+        /* RESPONSIVE — tablette */
+        @media (max-width: 900px) {
+            header {
+                flex-wrap: wrap;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            .partgauche .logo {
+                height: 5rem;
+            }
+            .card {
+                width: 95%;
+                height: auto;
+            }
+            .informations {
+                width: 80%;
+            }
+            .btnStart {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        /* RESPONSIVE — mobile */
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .partdroite {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .partgauche h1 {
+                font-size: 1.4rem;
+            }
+            .namespace {
+                font-size: 1.4rem;
+            }
+            .informations {
+                width: 90%;
+            }
+            .btnStart {
+                width: 100%;
+                margin-left: 0;
+            }
         }

@@ -77,6 +77,9 @@ function modifier_profil()
 {
     verifier_candidat();
 
+    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
+              strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+
     $prenom = trim($_POST['prenom'] ?? '');
     $nom    = trim($_POST['nom']    ?? '');
     $email  = trim($_POST['email']  ?? '');
@@ -96,6 +99,11 @@ function modifier_profil()
     }
 
     if (!empty($errors)) {
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'errors' => $errors]);
+            exit;
+        }
         $_SESSION['profile_errors'] = $errors;
         $_SESSION['profile_form']   = ['prenom' => $prenom, 'nom' => $nom, 'email' => $email];
         header('Location: ' . BASE_URL . '/profile');
@@ -103,9 +111,17 @@ function modifier_profil()
     }
 
     modifier_candidat($userId, $nom, $prenom, $email);
+
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success'     => true,
+            'nom_complet' => trim("$prenom $nom"),
+        ]);
+        exit;
+    }
+
     $_SESSION['profile_success'] = 'Profil mis à jour.';
     header('Location: ' . BASE_URL . '/profile');
     exit;
 }
-
-

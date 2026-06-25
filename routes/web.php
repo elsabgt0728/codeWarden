@@ -15,7 +15,8 @@ if ($url === '' || $url === false) {
 
 $methode = $_SERVER['REQUEST_METHOD'];
 
-if      ($methode === 'GET'  && $url === '/')             page_connexion();
+if      ($methode === 'GET'  && $url === '/')             page_accueil();
+elseif  ($methode === 'GET'  && $url === '/login')        page_connexion();
 elseif  ($methode === 'POST' && $url === '/login')        traiter_connexion();
 elseif  ($methode === 'GET'  && $url === '/signup')       page_inscription();
 elseif  ($methode === 'POST' && $url === '/signup')       traiter_inscription();
