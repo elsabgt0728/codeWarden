@@ -108,3 +108,24 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDisplay();
     checkCompletion();
 });
+
+let timeLeft = TEST_DURATION; // secondes
+
+function updateTimer() {
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+
+    document.getElementById("timer").textContent =
+        minutes + "m " + (seconds < 10 ? "0" : "") + seconds + "s";
+
+    if (timeLeft <= 0) {
+        // Temps écoulé → on soumet automatiquement
+        window.location.href = BASE_URL + "/candidat?page=finish";
+    }
+
+    timeLeft--;
+}
+
+setInterval(updateTimer, 1000);
+updateTimer();
+

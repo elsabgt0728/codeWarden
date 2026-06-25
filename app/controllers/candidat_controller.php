@@ -1,6 +1,14 @@
 <?php
+
+require_once ROOT . "/app/models/test.php";
+
     function page_candidat(){
+
 $page = $_GET['page'] ?? 'dashboard';
+
+verifier_candidat(); 
+$user = trouver_candidat_par_id($_SESSION["id_candidat"]);
+
 
 if ($page === 'test') {
 
@@ -43,12 +51,29 @@ if ($page === 'test') {
 
     // 4) Envoyer à la vue
     afficher_vue('candidat/pageCandidat', [
-        'questions' => $questions
+        'questions' => $questions,
+        'duree' => $test['duree_minutes'],
+        "user" => $user
     ]);
 
     return;
     }
+
+    if ($page === 'finish') {
+     // PAGE FINISH
+    afficher_vue("candidat/pageCandidat", [
+    "user" => $user
+]);
+    }
+
+
+    if ($page === 'dashboard') {
+   afficher_vue("candidat/pageCandidat", [
+    "user" => $user
+]);
+
 }
+    }
 
 
 
@@ -125,3 +150,5 @@ function modifier_profil()
     header('Location: ' . BASE_URL . '/profile');
     exit;
 }
+
+
