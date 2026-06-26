@@ -90,6 +90,7 @@ function candidat_commencer_test()
         'questions' => $questions,
         'duree' => $test['duree_minutes'],
         'id_passage' => $id_passage,
+        'id_test' => $id_test,
         'user' => $user
     ]);
 }
