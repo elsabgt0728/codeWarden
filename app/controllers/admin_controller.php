@@ -1,5 +1,6 @@
 <?php
-    $page = $_GET['page'] ?? 'exercices';
+
+$page = $_GET['page'] ?? 'exercices';
 
 if ($page === 'creer_exercice_traitement') {
     require_once ROOT . '/app/controllers/jeux_controller.php';

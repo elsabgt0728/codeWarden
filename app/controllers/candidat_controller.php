@@ -65,6 +65,8 @@ if ($page === 'test') {
     afficher_vue("candidat/pageCandidat", [
     "user" => $user
 ]);
+    candidat_afficher_finish();
+    return;
     }
 
     if ($page === 'dashboard') {
@@ -72,11 +74,6 @@ if ($page === 'test') {
     "user" => $user
 ]);
 
-}
-
-if ($page === "finish") {
-    candidat_afficher_finish();
-    return;
 }
 
     }
