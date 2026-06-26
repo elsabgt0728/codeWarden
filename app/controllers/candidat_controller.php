@@ -79,6 +79,12 @@ if ($page === "finish") {
     return;
 }
 
+if ($page === "expire") {
+    candidat_expire_test();
+    exit;
+}
+
+
     }
 
 
@@ -155,7 +161,7 @@ function candidat_expire_test()
 {
     verifier_candidat();
 
-    require_once ROOT . '/app/models/passage_test.php';
+    require_once ROOT . '/app/models/passageTest.php';
     require_once ROOT . '/app/models/resultat.php';
 
     $data = json_decode(file_get_contents("php://input"), true);

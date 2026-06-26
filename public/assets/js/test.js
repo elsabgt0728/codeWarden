@@ -1,3 +1,22 @@
+function debug(msg) {
+    let box = document.getElementById("debugBox");
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "debugBox";
+        box.style.position = "fixed";
+        box.style.bottom = "10px";
+        box.style.left = "10px";
+        box.style.padding = "10px";
+        box.style.background = "rgba(0,0,0,0.7)";
+        box.style.color = "white";
+        box.style.zIndex = "999999";
+        box.style.fontSize = "14px";
+        document.body.appendChild(box);
+    }
+    box.textContent = msg;
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
 
     let current = 0;
@@ -110,26 +129,33 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 let timeLeft = TEST_DURATION; // secondes
+let alertShown = false;
+
+const timerElement = document.getElementById("timer");
 
 function updateTimer() {
+
+    debug("timeLeft = " + timeLeft); // 🔍 DEBUG
+
     let minutes = Math.floor(timeLeft / 60);
     let seconds = timeLeft % 60;
 
-    document.getElementById("timer").textContent =
+    timerElement.textContent =
         minutes + "m " + (seconds < 10 ? "0" : "") + seconds + "s";
 
-    if (timeLeft <= 0) {
-        // Temps écoulé → on soumet automatiquement
-        window.location.href = BASE_URL + "/candidat?page=finish";
+    // 🔥 Alerte visuelle à 10 secondes
+    if (timeLeft <= 10 && !alertShown) {
+        alertShown = true;
+        timerElement.classList.add("timer-alert");
+        debug("ALERTE TRIGGER"); // 🔍 DEBUG
     }
 
-    timeLeft--;
-}
+    // ⏰ Temps écoulé → expire + redirection
+    if (timeLeft <= 0) {
+        debug("EXPIRE TRIGGER"); // 🔍 DEBUG
 
-setInterval(updateTimer, 1000);
-updateTimer();
+        clearInterval(timerInterval);
 
-if (timeLeft <= 0) {
     fetch(BASE_URL + "/candidat?page=expire", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -137,8 +163,30 @@ if (timeLeft <= 0) {
             id_passage: ID_PASSAGE,
             id_test: ID_TEST
         })
-    }).then(() => {
-        window.location.href = BASE_URL + "/candidat?page=finish&id_passage=" + ID_PASSAGE;
+    })
+    .then(response => {
+        debug("FETCH STATUS = " + response.status);
+
+        if (!response.ok) {
+            debug("FETCH FAILED: " + response.status);
+            return;
+        }
+
+        debug("REDIRECTION...");
+        window.location.href =
+            BASE_URL + "/candidat?page=finish&id_passage=" + ID_PASSAGE;
+    })
+    .catch(err => {
+        debug("FETCH ERROR: " + err);
     });
+
+
+
+        return;
+    }
+
+    timeLeft--;
 }
 
+const timerInterval = setInterval(updateTimer, 1000);
+updateTimer();

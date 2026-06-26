@@ -302,3 +302,23 @@ button:focus-visible,
         padding: 1rem;
     }
 }
+
+/* Timer normal */
+#timer {
+    font-size: 1.8rem;
+    font-weight: bold;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+/* Timer en alerte */
+.timer-alert {
+    color: #ff2e2e !important;
+    animation: pulse 0.8s infinite;
+}
+
+/* Animation pulsante */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+}

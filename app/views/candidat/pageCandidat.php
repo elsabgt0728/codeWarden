@@ -200,7 +200,13 @@ elseif($page === "test"):
 <script>
     const BASE_URL = "<?= BASE_URL ?>";
 </script>
-<script src="<?= BASE_URL ?>/public/assets/js/test.js"></script>
+<script>
+    const ID_PASSAGE = <?= $passage['id_passage_test'] ?>;
+    const ID_TEST = <?= $test['id_test'] ?>;
+    debug("ID_PASSAGE = " + ID_PASSAGE + " | ID_TEST = " + ID_TEST);
+
+</script>
+
 
 
     <footer>
@@ -345,7 +351,7 @@ elseif($page === "finish"):
 
 <script src="<?= BASE_URL ?>/public/assets/js/candidat.js">
 </script>
-
+<script src="<?= BASE_URL ?>/public/assets/js/test.js"></script>
 </body>
 
 </html>
