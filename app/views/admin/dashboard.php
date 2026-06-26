@@ -25,20 +25,41 @@
 
 <div class="layout">
     <aside class="sidebar">
-        <?php if ($page === 'exercices' || $page === 'creer_exercice'): ?>
-            <h2>Mes exercices</h2>
-            <ul>
-                <li><button class="btn-exercice">Exercice 1</button></li>
-                <li><button class="btn-exercice">Exercice 2</button></li>
-                <li><button class="btn-exercice">Exercice 3</button></li>
-            </ul>
-        <?php elseif ($page === 'tests' || $page === 'creer_test'): ?>
-            <h2>Mes tests</h2>
-            <ul>
-                <li><button class="btn-exercice">Test 1</button></li>
-                <li><button class="btn-exercice">Test 2</button></li>
-            </ul>
-        <?php elseif ($page === 'etudiants'): ?>
+        <?php if (empty($exercices)): ?>
+        <p class="sidebar-empty">Aucun exercice pour l'instant.</p>
+        <?php else: ?>
+        <ul>
+            <?php foreach ($exercices as $ex): ?>
+            <li>
+                <a href="<?= BASE_URL ?>/admin?page=exercices&exercice_id=<?= $ex['id_jeux'] ?>"
+                class="btn-exercice<?= isset($exercice_selectionne) && $exercice_selectionne['id_jeux'] === $ex['id_jeux'] ? ' active' : '' ?>">
+                    <?= htmlspecialchars($ex['titre']) ?>
+                    <span class="badge-statut badge-<?= $ex['statut'] ?>">
+                        <?= $ex['statut'] ?>
+                    </span>
+                </a>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+        <?php endif; ?>
+        <?php if (empty($tests)): ?>
+            <p class="sidebar-empty">Aucun test pour l'instant.</p>
+        <?php else: ?>
+        <ul>
+            <?php foreach ($tests as $t): ?>
+            <li>
+                <a href="<?= BASE_URL ?>/admin?page=tests&test_id=<?= $t['id_test'] ?>"
+                class="btn-exercice<?= isset($test_selectionne) && $test_selectionne['id_test'] === $t['id_test'] ? ' active' : '' ?>">
+                    <?= htmlspecialchars($t['titre']) ?>
+                    <span class="badge-statut badge-<?= $t['statut'] ?>">
+                        <?= $t['statut'] ?>
+                    </span>
+                </a>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+        <?php endif; ?>
+        <?php if ($page === 'etudiants'): ?>
             <h2>Étudiants</h2>
             <button class="btn-create">Ajouter</button>
             <ul>
