@@ -95,6 +95,7 @@ header {
   margin: 4px 0;
 }
 .btn-exercice {
+  display: block;
   width: 100%;
   padding: 8px 12px;
   background: rgba(255,255,255,0.15);
@@ -105,10 +106,19 @@ header {
   font-weight: 500;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
   transition: background 0.2s;
+  box-sizing: border-box;
 }
-.btn-exercice:hover {
+.btn-exercice:hover,
+.btn-exercice:visited {
+  color: #fff;
+  text-decoration: none;
   background: rgba(255,255,255,0.28);
+}
+.btn-exercice.active {
+  background: rgba(255,255,255,0.35);
+  border-color: rgba(255,255,255,0.7);
 }
 
 /* MAIN CONTENT */
@@ -176,6 +186,25 @@ tr:last-child td {
 }
 tr:hover td {
   background: #f5f9ff;
+}
+
+/* BADGE STATUT SIDEBAR */
+.badge-statut {
+  float: right;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+.badge-actif    { background: rgba(0,200,80,0.25);  color: #a8ffcc; }
+.badge-brouillon{ background: rgba(255,200,0,0.25); color: #ffe999; }
+.badge-inactif  { background: rgba(255,80,80,0.25); color: #ffbcbc; }
+
+.sidebar-empty {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  padding: 8px 4px;
 }
 
 /* BADGES */
