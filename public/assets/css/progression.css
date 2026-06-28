@@ -216,6 +216,26 @@ main {
     text-decoration: none;
 }
 
+.question-box.answered,
+.question-box.answered.active {
+    background: #4CAF50 !important;
+    color: white !important;
+    border: none !important;
+}
+
+
+.question-box.answered {
+    animation: pop 0.25s ease-out;
+}
+
+@keyframes pop {
+    0% { transform: scale(0.8); }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+
+
 .submit:hover {
     background: #00b44a;
     transform: translateY(-2px);
@@ -281,4 +301,24 @@ button:focus-visible,
         height: auto;
         padding: 1rem;
     }
+}
+
+/* Timer normal */
+#timer {
+    font-size: 1.8rem;
+    font-weight: bold;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+/* Timer en alerte */
+.timer-alert {
+    color: #ff2e2e !important;
+    animation: pulse 0.8s infinite;
+}
+
+/* Animation pulsante */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+    100% { transform: scale(1); }
 }
