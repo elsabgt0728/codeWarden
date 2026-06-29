@@ -57,7 +57,14 @@ function admin_convoquer_test()
 
     // Bloquer si déjà convoqué
     if (test_est_convoque($id_test)) {
+        error_log('[CodeWarden] Convoquer bloqué (déjà convoqué) pour id_test=' . $id_test);
         header('Location: ' . BASE_URL . '/admin?page=tests&error=deja_convoque');
+        exit;
+    }
+
+    if (empty($convocations)) {
+        error_log('[CodeWarden] Convoquer annulé : aucun candidat pour id_test=' . $id_test);
+        header('Location: ' . BASE_URL . '/admin?page=tests&error=aucun_candidat');
         exit;
     }
 
@@ -69,8 +76,9 @@ function admin_convoquer_test()
     $protocole  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $lien_email = $protocole . '://' . $_SERVER['HTTP_HOST'] . BASE_URL . '/candidat/commencer?id_test=' . $id_test;
 
+    $nb_ok = 0;
     foreach ($convocations as $conv) {
-        envoyer_convocation(
+        $ok = envoyer_convocation(
             $conv['email'],
             $conv['prenom'],
             $conv['nom'],
@@ -79,9 +87,14 @@ function admin_convoquer_test()
             $lien_email,
             $date_expiration
         );
+        if ($ok) {
+            $nb_ok++;
+        } else {
+            error_log('[CodeWarden] envoyer_convocation échoué pour ' . $conv['email'] . ' (id_test=' . $id_test . ')');
+        }
     }
 
-    header('Location: ' . BASE_URL . '/admin?page=tests&success=convoque');
+    header('Location: ' . BASE_URL . '/admin?page=tests&success=convoque&nb=' . $nb_ok);
     exit;
 }
 
@@ -90,19 +103,40 @@ function page_modifier_test()
     verifier_admin();
     require_once ROOT . '/app/models/test.php';
     require_once ROOT . '/app/models/admin.php';
+    require_once ROOT . '/app/models/jeux.php';
+    require_once ROOT . '/app/models/candidat.php';
+    require_once ROOT . '/app/models/convocation.php';
+    require_once ROOT . '/app/models/session.php';
 
     $id   = (int)($_GET['id'] ?? 0);
     $test = $id ? test_recuperer_par_id($id) : null;
     if (!$test) { header('Location: ' . BASE_URL . '/admin?page=tests'); exit; }
 
     $id_admin = $_SESSION['id_admin'];
+
+    // Jeux actuellement assignés à ce test
+    $jeux_assignes    = test_recuperer_jeux($id);
+    $ids_jeux_assignes = array_column($jeux_assignes, 'id_jeux');
+
+    // Candidats actuellement convoqués pour ce test
+    $candidats_assignes    = convocations_par_test($id);
+    $ids_candidats_assignes = array_column($candidats_assignes, 'id_candidat');
+
+    // Est-ce que le test a déjà été convoqué ?
+    $est_convoque = test_est_convoque($id);
+
     afficher_vue('admin/dashboard', [
-        'page'                 => 'modifier_test',
-        'exercices'            => lister_jeux_admin($id_admin),
-        'tests'                => lister_test_admin($id_admin),
-        'exercice_selectionne' => null,
-        'test_selectionne'     => null,
-        'test_edition'         => $test,
+        'page'                  => 'modifier_test',
+        'exercices'             => lister_jeux_admin($id_admin),
+        'tests'                 => lister_test_admin($id_admin),
+        'exercice_selectionne'  => null,
+        'test_selectionne'      => null,
+        'test_edition'          => $test,
+        'tous_les_jeux'         => jeux_tous_actifs(),
+        'tous_les_candidats'    => candidats_tous_actifs(),
+        'ids_jeux_assignes'     => $ids_jeux_assignes,
+        'ids_candidats_assignes'=> $ids_candidats_assignes,
+        'est_convoque'          => $est_convoque,
     ]);
 }
 
@@ -110,18 +144,40 @@ function traiter_modification_test()
 {
     verifier_admin();
     require_once ROOT . '/app/models/test.php';
+    require_once ROOT . '/app/models/session.php';
+    require_once ROOT . '/app/models/convocation.php';
 
-    $id    = (int)($_POST['id_test']    ?? 0);
-    $titre = trim($_POST['titre_test']  ?? '');
-    $duree = max(1, intval($_POST['duree'] ?? 60));
-    $statut = $_POST['statut']          ?? 'actif';
+    $id        = (int)($_POST['id_test']   ?? 0);
+    $titre     = trim($_POST['titre_test'] ?? '');
+    $duree     = max(1, intval($_POST['duree'] ?? 60));
+    $statut    = $_POST['statut']          ?? 'actif';
+    $jeux_ids  = $_POST['jeux']            ?? [];
+    $cands_ids = $_POST['candidats']       ?? [];
 
     if (!$id || $titre === '') {
         header('Location: ' . BASE_URL . '/admin/test/modifier?id=' . $id . '&error=1');
         exit;
     }
 
+    // Mettre à jour titre/durée/statut
     test_mettre_a_jour($id, $titre, $duree, $statut);
+
+    // Mettre à jour les jeux assignés
+    test_mettre_a_jour_jeux($id, $jeux_ids);
+
+    // Mettre à jour les candidats (seulement si pas encore convoqué)
+    if (!test_est_convoque($id)) {
+        $session = session_recuperer_par_test($id);
+        if ($session) {
+            $lien = BASE_URL . '/candidat/commencer?id_test=' . $id;
+            $db   = connecter_bdd();
+            $db->prepare("DELETE FROM convocation WHERE id_session = ?")->execute([$session['id_session']]);
+            foreach ($cands_ids as $id_candidat) {
+                convocation_creer((int)$id_candidat, (int)$session['id_session'], $lien, null);
+            }
+        }
+    }
+
     header('Location: ' . BASE_URL . '/admin?page=tests&success=modifie');
     exit;
 }

@@ -56,20 +56,30 @@ function tableau_de_bord()
         }
     }
 
-    $test_selectionne = null;
+    $test_selectionne  = null;
+    $jeux_test_selectionne = [];
+    $candidats_test_selectionne = [];
     if (isset($_GET['test_id'])) {
         $id_cible = (int) $_GET['test_id'];
         foreach ($tests as $t) {
             if ((int)$t['id_test'] === $id_cible) { $test_selectionne = $t; break; }
         }
+        if ($test_selectionne) {
+            require_once ROOT . '/app/models/test.php';
+            require_once ROOT . '/app/models/convocation.php';
+            $jeux_test_selectionne      = test_recuperer_jeux($id_cible);
+            $candidats_test_selectionne = convocations_par_test($id_cible);
+        }
     }
 
     $base = [
-        'page'                 => $page,
-        'exercices'            => $exercices,
-        'tests'                => $tests,
-        'exercice_selectionne' => $exercice_selectionne,
-        'test_selectionne'     => $test_selectionne,
+        'page'                       => $page,
+        'exercices'                  => $exercices,
+        'tests'                      => $tests,
+        'exercice_selectionne'       => $exercice_selectionne,
+        'test_selectionne'           => $test_selectionne,
+        'jeux_test_selectionne'      => $jeux_test_selectionne,
+        'candidats_test_selectionne' => $candidats_test_selectionne,
     ];
 
     if ($page === 'creer_exercice') {
@@ -123,17 +133,33 @@ function admin_decision_candidat()
     $valides    = ['admis', 'refuse', 'liste_attente', 'en_attente'];
 
     if ($id_passage && in_array($decision, $valides)) {
+        // Bloquer si une décision finale a déjà été prise
+        $resultat_existant = resultat_par_passage($id_passage);
+        if ($resultat_existant && in_array($resultat_existant['decision'], ['admis', 'refuse', 'liste_attente'])) {
+            header('Location: ' . BASE_URL . '/admin?page=etudiants');
+            exit;
+        }
+
         resultat_mettre_a_jour_decision($id_passage, $decision);
 
         $infos = passage_candidat_et_test($id_passage);
         if ($infos) {
-            envoyer_decision(
+            $ok = envoyer_decision(
                 $infos['email'],
                 $infos['prenom'],
                 $infos['nom'],
                 $infos['titre_test'],
                 $decision
             );
+            if (!$ok) {
+                error_log('[CodeWarden] envoyer_decision a échoué pour id_passage=' . $id_passage . ' email=' . $infos['email']);
+                header('Location: ' . BASE_URL . '/admin?page=etudiants&mail_error=1');
+                exit;
+            }
+        } else {
+            error_log('[CodeWarden] passage_candidat_et_test a retourné false pour id_passage=' . $id_passage);
+            header('Location: ' . BASE_URL . '/admin?page=etudiants&infos_error=1');
+            exit;
         }
     }
 

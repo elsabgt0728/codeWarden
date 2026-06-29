@@ -23,10 +23,38 @@
     </nav>
 </header>
 
+<?php
+$toast_msg   = '';
+$toast_type  = 'success'; // 'success' | 'error' | 'warning'
+$err = $_GET['error']   ?? '';
+$ok  = $_GET['success'] ?? '';
+if ($ok === 'convoque')       { $toast_msg = 'Convocations envoyées avec succès (' . (int)($_GET['nb'] ?? 0) . ' mail' . ((int)($_GET['nb'] ?? 0) > 1 ? 's' : '') . ').'; }
+elseif ($ok === 'modifie')    { $toast_msg = 'Test modifié avec succès.'; }
+elseif ($ok === 'supprime')   { $toast_msg = 'Test supprimé.'; }
+elseif ($ok === '1')          { $toast_msg = 'Enregistré avec succès.'; }
+elseif ($err === 'deja_convoque')  { $toast_msg = 'Ce test a déjà été convoqué. Les mails ont bien été envoyés précédemment.'; $toast_type = 'error'; }
+elseif ($err === 'aucun_candidat') { $toast_msg = 'Aucun candidat assigné à ce test. Ajoutez des candidats avant de convoquer.'; $toast_type = 'warning'; }
+elseif (isset($_GET['mail_error']))   { $toast_msg = "L'e-mail de décision n'a pas pu être envoyé. Consultez les logs XAMPP pour le détail."; $toast_type = 'error'; }
+elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le candidat. La décision a quand même été enregistrée.'; $toast_type = 'error'; }
+?>
+<?php if ($toast_msg): ?>
+<div id="toast-notif" class="toast toast-<?= $toast_type ?>">
+    <?= htmlspecialchars($toast_msg) ?>
+</div>
+<script>
+    setTimeout(function() {
+        var t = document.getElementById('toast-notif');
+        if (t) { t.classList.add('toast-hide'); setTimeout(function(){ t.remove(); }, 400); }
+    }, 3000);
+</script>
+<?php endif; ?>
+
+
 <div class="layout">
     <aside class="sidebar">
+        <p class="sidebar-section-label">Exercices</p>
         <?php if (empty($exercices)): ?>
-        <p class="sidebar-empty">Aucun exercice pour l'instant.</p>
+            <p class="sidebar-empty">Aucun exercice.</p>
         <?php else: ?>
         <ul>
             <?php foreach ($exercices as $ex): ?>
@@ -34,101 +62,159 @@
                 <a href="<?= BASE_URL ?>/admin?page=exercices&exercice_id=<?= $ex['id_jeux'] ?>"
                 class="btn-exercice<?= isset($exercice_selectionne) && $exercice_selectionne['id_jeux'] === $ex['id_jeux'] ? ' active' : '' ?>">
                     <?= htmlspecialchars($ex['titre']) ?>
-                    <span class="badge-statut badge-<?= $ex['statut'] ?>">
-                        <?= $ex['statut'] ?>
-                    </span>
+                    <span class="badge-statut badge-<?= $ex['statut'] ?>"><?= $ex['statut'] ?></span>
                 </a>
             </li>
             <?php endforeach; ?>
         </ul>
         <?php endif; ?>
+
+        <p class="sidebar-section-label" style="margin-top:16px;">Tests</p>
         <?php if (empty($tests)): ?>
-            <p class="sidebar-empty">Aucun test pour l'instant.</p>
+            <p class="sidebar-empty">Aucun test.</p>
         <?php else: ?>
         <ul>
             <?php foreach ($tests as $t): ?>
             <li>
                 <a href="<?= BASE_URL ?>/admin?page=tests&test_id=<?= $t['id_test'] ?>"
-                class="btn-exercice<?= isset($test_selectionne) && $test_selectionne['id_test'] === $t['id_test'] ? ' active' : '' ?>">
+                class="btn-exercice btn-test<?= isset($test_selectionne) && $test_selectionne['id_test'] === $t['id_test'] ? ' active' : '' ?>">
                     <?= htmlspecialchars($t['titre']) ?>
-                    <span class="badge-statut badge-<?= $t['statut'] ?>">
-                        <?= $t['statut'] ?>
-                    </span>
+                    <span class="badge-statut badge-<?= $t['statut'] ?>"><?= $t['statut'] ?></span>
                 </a>
             </li>
             <?php endforeach; ?>
         </ul>
         <?php endif; ?>
-        <?php if ($page === 'etudiants'): ?>
-            <h2>Étudiants</h2>
-            <button class="btn-create">Ajouter</button>
-            <ul>
-                <li><button class="btn-exercice">Groupe A</button></li>
-                <li><button class="btn-exercice">Groupe B</button></li>
-            </ul>
-        <?php elseif ($page === 'statistiques'): ?>
-            <h2>Statistiques</h2>
+
+        <?php if ($page === 'statistiques'): ?>
+            <p class="sidebar-section-label">Statistiques</p>
         <?php endif; ?>
     </aside>
 
     <main class="content-center">
        <?php if ($page === 'exercices' || $page === 'tests'): ?>
 
-        <a class="create-exo-btn"
-           href="<?= BASE_URL ?>/admin?page=<?= $page === 'tests' ? 'creer_test' : 'creer_exercice' ?>">
-            + Créer un <?= $page === 'tests' ? 'test' : 'exercice' ?>
-        </a>
-
         <?php if ($page === 'exercices'): ?>
-        <div class="table-wrap" style="margin-top:24px;">
+        <?php if ($exercice_selectionne): ?>
+            <!-- Détail d'un exercice -->
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h2><?= htmlspecialchars($exercice_selectionne['titre']) ?></h2>
+                    <span class="badge badge-statut badge-<?= $exercice_selectionne['statut'] ?>"><?= $exercice_selectionne['statut'] ?></span>
+                </div>
+                <div class="detail-meta">
+                    <span><strong>Type :</strong> <?= htmlspecialchars($exercice_selectionne['type']) ?></span>
+                    <span><strong>Difficulté :</strong> <?= htmlspecialchars($exercice_selectionne['difficulte']) ?></span>
+                    <span><strong>Barème :</strong> <?= (int)$exercice_selectionne['bareme'] ?> pts</span>
+                </div>
+                <div class="detail-actions">
+                    <a href="<?= BASE_URL ?>/admin/jeux/modifier?id=<?= $exercice_selectionne['id_jeux'] ?>" class="btn-action btn-edit">Modifier</a>
+                    <form method="POST" action="<?= BASE_URL ?>/admin/jeux/supprimer" onsubmit="return confirm('Supprimer cet exercice ?')" style="display:inline">
+                        <input type="hidden" name="id_jeux" value="<?= $exercice_selectionne['id_jeux'] ?>">
+                        <button type="submit" class="btn-action btn-delete">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        <?php else: ?>
+            <!-- Liste de tous les exercices -->
+            <a class="create-exo-btn" href="<?= BASE_URL ?>/admin?page=creer_exercice">+ Créer un exercice</a>
+            <div class="table-wrap" style="margin-top:24px;">
             <?php if (empty($exercices)): ?>
                 <p style="color:#9ca3af;text-align:center;padding:24px;">Aucun exercice.</p>
             <?php else: ?>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Titre</th><th>Type</th><th>Difficulté</th><th>Barème</th><th>Statut</th><th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($exercices as $ex): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($ex['titre']) ?></td>
-                        <td><?= htmlspecialchars($ex['type']) ?></td>
-                        <td><?= htmlspecialchars($ex['difficulte']) ?></td>
-                        <td><?= (int)$ex['bareme'] ?> pts</td>
-                        <td><span class="badge badge-statut badge-<?= $ex['statut'] ?>"><?= $ex['statut'] ?></span></td>
-                        <td style="display:flex;gap:8px;flex-wrap:wrap;">
-                            <a href="<?= BASE_URL ?>/admin/jeux/modifier?id=<?= $ex['id_jeux'] ?>"
-                               class="btn-action btn-edit">Modifier</a>
-                            <form method="POST" action="<?= BASE_URL ?>/admin/jeux/supprimer"
-                                  onsubmit="return confirm('Supprimer cet exercice ?')">
-                                <input type="hidden" name="id_jeux" value="<?= $ex['id_jeux'] ?>">
-                                <button type="submit" class="btn-action btn-delete">Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+            <div class="table-container"><table>
+                <thead><tr><th>Titre</th><th>Type</th><th>Difficulté</th><th>Barème</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody>
+                <?php foreach ($exercices as $ex): ?>
+                <tr>
+                    <td><?= htmlspecialchars($ex['titre']) ?></td>
+                    <td><?= htmlspecialchars($ex['type']) ?></td>
+                    <td><?= htmlspecialchars($ex['difficulte']) ?></td>
+                    <td><?= (int)$ex['bareme'] ?> pts</td>
+                    <td><span class="badge badge-statut badge-<?= $ex['statut'] ?>"><?= $ex['statut'] ?></span></td>
+                    <td style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <a href="<?= BASE_URL ?>/admin/jeux/modifier?id=<?= $ex['id_jeux'] ?>" class="btn-action btn-edit">Modifier</a>
+                        <form method="POST" action="<?= BASE_URL ?>/admin/jeux/supprimer" onsubmit="return confirm('Supprimer cet exercice ?')">
+                            <input type="hidden" name="id_jeux" value="<?= $ex['id_jeux'] ?>">
+                            <button type="submit" class="btn-action btn-delete">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table></div>
             <?php endif; ?>
-        </div>
+            </div>
+        <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($page === 'tests'): ?>
-        <div class="table-wrap" style="margin-top:24px;">
-            <?php if (empty($tests)): ?>
-                <p style="color:#9ca3af;text-align:center;padding:24px;">Aucun test.</p>
-            <?php else: ?>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Titre</th><th>Durée</th><th>Statut</th><th>Candidats</th><th>Date création</th><th>Actions</th>
-                        </tr>
-                    </thead>
+
+        <?php if ($test_selectionne): ?>
+            <?php $convoque = !empty($test_selectionne['est_convoque']); ?>
+            <!-- Détail d'un test -->
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h2><?= htmlspecialchars($test_selectionne['titre']) ?></h2>
+                    <span class="badge badge-statut badge-<?= $test_selectionne['statut'] ?>"><?= $test_selectionne['statut'] ?></span>
+                </div>
+                <div class="detail-meta">
+                    <span><strong>Durée :</strong> <?= (int)($test_selectionne['duree_minutes'] ?? 60) ?> min</span>
+                    <span><strong>Candidats :</strong> <?= (int)($test_selectionne['nb_convoques'] ?? 0) ?></span>
+                    <?php if (isset($test_selectionne['date_creation'])): ?>
+                    <span><strong>Créé le :</strong> <?= date('d/m/Y', strtotime($test_selectionne['date_creation'])) ?></span>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (!empty($jeux_test_selectionne)): ?>
+                <div class="detail-section">
+                    <h4>Exercices assignés</h4>
+                    <ul class="detail-list">
+                    <?php foreach ($jeux_test_selectionne as $j): ?>
+                        <li><?= htmlspecialchars($j['titre']) ?> — <em><?= htmlspecialchars($j['type']) ?></em> (<?= (int)$j['bareme'] ?> pts)</li>
+                    <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endif; ?>
+
+                <?php if (!empty($candidats_test_selectionne)): ?>
+                <div class="detail-section">
+                    <h4>Candidats convoqués</h4>
+                    <ul class="detail-list">
+                    <?php foreach ($candidats_test_selectionne as $c): ?>
+                        <li><?= htmlspecialchars($c['prenom'] . ' ' . $c['nom']) ?> — <?= htmlspecialchars($c['email']) ?></li>
+                    <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endif; ?>
+
+                <div class="detail-actions">
+                    <?php if ($convoque): ?>
+                        <button class="btn-action btn-admis" disabled>Convoqué ✓</button>
+                    <?php else: ?>
+                        <form method="POST" action="<?= BASE_URL ?>/admin/test/convoquer" style="display:inline"
+                              onsubmit="return confirm('Envoyer les convocations par mail à tous les candidats de ce test ?')">
+                            <input type="hidden" name="id_test" value="<?= $test_selectionne['id_test'] ?>">
+                            <button type="submit" class="btn-action btn-admis">Convoquer</button>
+                        </form>
+                    <?php endif; ?>
+                    <a href="<?= BASE_URL ?>/admin/test/modifier?id=<?= $test_selectionne['id_test'] ?>" class="btn-action btn-edit">Modifier</a>
+                    <form method="POST" action="<?= BASE_URL ?>/admin/test/supprimer" style="display:inline"
+                          onsubmit="return confirm('Supprimer ce test et toutes ses données ?')">
+                        <input type="hidden" name="id_test" value="<?= $test_selectionne['id_test'] ?>">
+                        <button type="submit" class="btn-action btn-delete">Supprimer</button>
+                    </form>
+                </div>
+            </div>
+        <?php else: ?>
+            <!-- Liste de tous les tests -->
+            <a class="create-exo-btn" href="<?= BASE_URL ?>/admin?page=creer_test">+ Créer un test</a>
+            <div class="table-wrap" style="margin-top:24px;">
+                <?php if (empty($tests)): ?>
+                    <p style="color:#9ca3af;text-align:center;padding:24px;">Aucun test.</p>
+                <?php else: ?>
+                <div class="table-container"><table>
+                    <thead><tr><th>Titre</th><th>Durée</th><th>Statut</th><th>Candidats</th><th>Date création</th><th>Actions</th></tr></thead>
                     <tbody>
                     <?php foreach ($tests as $t): ?>
                     <?php $convoque = !empty($t['est_convoque']); ?>
@@ -148,8 +234,7 @@
                                     <button type="submit" class="btn-action btn-admis">Convoquer</button>
                                 </form>
                             <?php endif; ?>
-                            <a href="<?= BASE_URL ?>/admin/test/modifier?id=<?= $t['id_test'] ?>"
-                               class="btn-action btn-edit">Modifier</a>
+                            <a href="<?= BASE_URL ?>/admin/test/modifier?id=<?= $t['id_test'] ?>" class="btn-action btn-edit">Modifier</a>
                             <form method="POST" action="<?= BASE_URL ?>/admin/test/supprimer"
                                   onsubmit="return confirm('Supprimer ce test et toutes ses données ?')">
                                 <input type="hidden" name="id_test" value="<?= $t['id_test'] ?>">
@@ -159,10 +244,10 @@
                     </tr>
                     <?php endforeach; ?>
                     </tbody>
-                </table>
+                </table></div>
+                <?php endif; ?>
             </div>
-            <?php endif; ?>
-        </div>
+        <?php endif; ?>
         <?php endif; ?>
 
   <?php endif; ?>
@@ -243,6 +328,41 @@
             <?php endforeach; ?>
         </select>
     </div>
+
+    <div class="form-group">
+        <label>Exercices assignés</label>
+        <div class="checkbox-grid">
+        <?php foreach ($tous_les_jeux ?? [] as $jeu): ?>
+            <label class="checkbox-item">
+                <input type="checkbox" name="jeux[]" value="<?= $jeu['id_jeux'] ?>"
+                    <?= in_array($jeu['id_jeux'], $ids_jeux_assignes ?? []) ? 'checked' : '' ?>>
+                <?= htmlspecialchars($jeu['titre']) ?>
+                <span class="badge-statut badge-<?= $jeu['statut'] ?>"><?= $jeu['statut'] ?></span>
+            </label>
+        <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>
+            Candidats
+            <?php if ($est_convoque ?? false): ?>
+                <span style="font-size:12px;color:#d62828;font-weight:400;margin-left:8px;">⚠ Convocations déjà envoyées — candidats verrouillés</span>
+            <?php endif; ?>
+        </label>
+        <div class="checkbox-grid">
+        <?php foreach ($tous_les_candidats ?? [] as $c): ?>
+            <label class="checkbox-item" <?= ($est_convoque ?? false) ? 'style="opacity:0.5;pointer-events:none;"' : '' ?>>
+                <input type="checkbox" name="candidats[]" value="<?= $c['id_candidat'] ?>"
+                    <?= in_array($c['id_candidat'], $ids_candidats_assignes ?? []) ? 'checked' : '' ?>
+                    <?= ($est_convoque ?? false) ? 'disabled' : '' ?>>
+                <?= htmlspecialchars($c['prenom'] . ' ' . $c['nom']) ?>
+                <span style="font-size:11px;color:#9ca3af;"><?= htmlspecialchars($c['email']) ?></span>
+            </label>
+        <?php endforeach; ?>
+        </div>
+    </div>
+
     <div style="display:flex;gap:12px;">
         <button type="submit" class="btn-submit">Enregistrer</button>
         <a href="<?= BASE_URL ?>/admin?page=tests" class="btn-submit" style="background:#6b7280;text-decoration:none;text-align:center;">Annuler</a>
@@ -416,22 +536,23 @@
                                 </td>
                                 <td>
                                 <?php if ($id_passage && in_array($statut, ['termine','expire'])): ?>
+                                    <?php $decision_finale = in_array($decision, ['admis','refuse','liste_attente']); ?>
                                     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
                                         <span class="badge <?= $dec_colors[$decision] ?? 'badge-orange' ?>" style="margin-right:4px;">
                                             <?= $dec_labels[$decision] ?? 'En attente' ?>
                                         </span>
+                                        <?php if (!$decision_finale): ?>
                                         <form method="POST" action="<?= BASE_URL ?>/admin/candidat/decision" style="display:inline">
                                             <input type="hidden" name="id_passage_test" value="<?= (int)$id_passage ?>">
                                             <input type="hidden" name="decision" value="admis">
-                                            <button type="submit" class="btn-action btn-admis"
-                                                <?= $decision === 'admis' ? 'disabled' : '' ?>>Admis</button>
+                                            <button type="submit" class="btn-action btn-admis">Admis</button>
                                         </form>
                                         <form method="POST" action="<?= BASE_URL ?>/admin/candidat/decision" style="display:inline">
                                             <input type="hidden" name="id_passage_test" value="<?= (int)$id_passage ?>">
                                             <input type="hidden" name="decision" value="refuse">
-                                            <button type="submit" class="btn-action btn-delete"
-                                                <?= $decision === 'refuse' ? 'disabled' : '' ?>>Refusé</button>
+                                            <button type="submit" class="btn-action btn-delete">Refusé</button>
                                         </form>
+                                        <?php endif; ?>
                                     </div>
                                 <?php else: ?>
                                     <span style="color:#9ca3af;font-size:13px;">–</span>

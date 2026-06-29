@@ -100,7 +100,7 @@ function envoyer_decision($candidat_email, $candidat_prenom, $candidat_nom, $tit
         $mail->send();
         return true;
     } catch (Exception $e) {
-        error_log('Mailer decision error: ' . $mail->ErrorInfo);
+        error_log('[CodeWarden] Mailer decision error — Message: ' . $e->getMessage() . ' | SMTP: ' . $mail->ErrorInfo . ' | To: ' . $candidat_email);
         return false;
     }
 }
