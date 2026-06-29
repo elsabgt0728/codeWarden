@@ -4,259 +4,552 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CodeWarden – Administration</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/CodeWardenAdminCSS.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/public/assets/css/CodeWardenAdminCSS.css?v=3">
 </head>
 <body>
 
 <header>
     <nav class="header-inner" aria-label="Navigation principale">
         <div class="nav-group">
-            <a class="navbar-link <?= $page === 'exercices'    ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=exercices"<?= $page === 'exercices' ? ' aria-current="page"' : '' ?>>Exercices</a>
-            <a class="navbar-link <?= $page === 'tests'        ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=tests"<?= $page === 'tests' ? ' aria-current="page"' : '' ?>>Tests</a>
+            <a class="navbar-link <?= in_array($page, ['exercices','liste_exercice','creer_exercice']) ? 'active' : '' ?>"
+               href="<?= BASE_URL ?>/admin?page=exercices"
+               <?= in_array($page, ['exercices','liste_exercice','creer_exercice']) ? 'aria-current="page"' : '' ?>>
+                Exercices
+            </a>
+            <a class="navbar-link <?= in_array($page, ['tests','create_test','epreuve']) ? 'active' : '' ?>"
+               href="<?= BASE_URL ?>/admin?page=tests"
+               <?= in_array($page, ['tests','create_test','epreuve']) ? 'aria-current="page"' : '' ?>>
+                Tests
+            </a>
         </div>
         <div class="header-logo">CodeWarden</div>
         <div class="nav-group">
-            <a class="navbar-link <?= $page === 'etudiants'    ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=etudiants"<?= $page === 'etudiants' ? ' aria-current="page"' : '' ?>>Étudiants</a>
-            <a class="navbar-link <?= $page === 'statistiques' ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=statistiques"<?= $page === 'statistiques' ? ' aria-current="page"' : '' ?>>Statistiques</a>
+            <a class="navbar-link <?= in_array($page, ['etudiants','liste_candidat','attribution_test']) ? 'active' : '' ?>"
+               href="<?= BASE_URL ?>/admin?page=etudiants"
+               <?= in_array($page, ['etudiants','liste_candidat','attribution_test']) ? 'aria-current="page"' : '' ?>>
+                Étudiants
+            </a>
+            <a class="navbar-link <?= $page === 'statistiques' ? 'active' : '' ?>"
+               href="<?= BASE_URL ?>/admin?page=statistiques"
+               <?= $page === 'statistiques' ? 'aria-current="page"' : '' ?>>
+                Statistiques
+            </a>
             <a class="navbar-link" href="<?= BASE_URL ?>/admin/logout">Déconnexion</a>
         </div>
     </nav>
 </header>
 
 <div class="layout">
+
+    <!-- SIDEBAR -->
     <aside class="sidebar">
-        <?php if (empty($exercices)): ?>
-        <p class="sidebar-empty">Aucun exercice pour l'instant.</p>
-        <?php else: ?>
-        <ul>
-            <?php foreach ($exercices as $ex): ?>
-            <li>
-                <a href="<?= BASE_URL ?>/admin?page=exercices&exercice_id=<?= $ex['id_jeux'] ?>"
-                class="btn-exercice<?= isset($exercice_selectionne) && $exercice_selectionne['id_jeux'] === $ex['id_jeux'] ? ' active' : '' ?>">
-                    <?= htmlspecialchars($ex['titre']) ?>
-                    <span class="badge-statut badge-<?= $ex['statut'] ?>">
-                        <?= $ex['statut'] ?>
-                    </span>
-                </a>
-            </li>
-            <?php endforeach; ?>
-        </ul>
-        <?php endif; ?>
-        <?php if (empty($tests)): ?>
-            <p class="sidebar-empty">Aucun test pour l'instant.</p>
-        <?php else: ?>
-        <ul>
-            <?php foreach ($tests as $t): ?>
-            <li>
-                <a href="<?= BASE_URL ?>/admin?page=tests&test_id=<?= $t['id_test'] ?>"
-                class="btn-exercice<?= isset($test_selectionne) && $test_selectionne['id_test'] === $t['id_test'] ? ' active' : '' ?>">
-                    <?= htmlspecialchars($t['titre']) ?>
-                    <span class="badge-statut badge-<?= $t['statut'] ?>">
-                        <?= $t['statut'] ?>
-                    </span>
-                </a>
-            </li>
-            <?php endforeach; ?>
-        </ul>
-        <?php endif; ?>
-        <?php if ($page === 'etudiants'): ?>
-            <h2>Étudiants</h2>
-            <button class="btn-create">Ajouter</button>
+
+        <?php if (in_array($page, ['exercices', 'liste_exercice', 'creer_exercice'])): ?>
+            <h2>Mes exercices</h2>
             <ul>
-                <li><button class="btn-exercice">Groupe A</button></li>
-                <li><button class="btn-exercice">Groupe B</button></li>
+                <li><a href="<?= BASE_URL ?>/admin?page=liste_exercice"
+                       class="sidebar-link <?= $page === 'liste_exercice' ? 'active' : '' ?>">
+                    Liste des exercices
+                </a></li>
+                <li><a href="<?= BASE_URL ?>/admin?page=creer_exercice"
+                       class="sidebar-link <?= $page === 'creer_exercice' ? 'active' : '' ?>">
+                    Créer un exercice
+                </a></li>
             </ul>
+
+        <?php elseif (in_array($page, ['tests', 'create_test', 'epreuve'])): ?>
+            <h2>Mes tests</h2>
+            <ul>
+                <li><a href="<?= BASE_URL ?>/admin?page=create_test"
+                       class="sidebar-link <?= $page === 'create_test' ? 'active' : '' ?>">
+                    + Créer un test
+                </a></li>
+                <?php foreach ($tests as $test): ?>
+                <li><a href="<?= BASE_URL ?>/admin?page=epreuve&id=<?= $test['id_test'] ?>"
+                       class="sidebar-link <?= ($page === 'epreuve' && (string)($id ?? '') === (string)$test['id_test']) ? 'active' : '' ?>">
+                    <?= htmlspecialchars($test['titre']) ?>
+                </a></li>
+                <?php endforeach; ?>
+                <?php if (empty($tests)): ?>
+                <li><span class="sidebar-empty">Aucun test</span></li>
+                <?php endif; ?>
+            </ul>
+
+        <?php elseif (in_array($page, ['etudiants', 'liste_candidat', 'attribution_test'])): ?>
+            <h2>Étudiants</h2>
+            <ul>
+                <li><a href="<?= BASE_URL ?>/admin?page=liste_candidat"
+                       class="sidebar-link <?= $page === 'liste_candidat' ? 'active' : '' ?>">
+                    Liste des candidats
+                </a></li>
+                <li><a href="<?= BASE_URL ?>/admin?page=attribution_test"
+                       class="sidebar-link <?= $page === 'attribution_test' ? 'active' : '' ?>">
+                    Attribution du test
+                </a></li>
+            </ul>
+
         <?php elseif ($page === 'statistiques'): ?>
             <h2>Statistiques</h2>
+
+        <?php else: ?>
+            <h2>Navigation</h2>
         <?php endif; ?>
+
     </aside>
 
+    <!-- CONTENU CENTRAL -->
     <main class="content-center">
-       <?php if ($page === 'exercices' || $page === 'tests'): ?>
 
-        <a class="create-exo-btn" 
-           href="<?= BASE_URL ?>/admin?page=<?= $page === 'tests' ? 'creer_test' : 'creer_exercice' ?>">
-            Créer un <?= $page === 'tests' ? 'test' : 'exercice' ?>
-        </a>
-  <?php endif; ?>
+        <?php if (!empty($success)): ?>
+            <div class="flash-success" role="alert"><?= htmlspecialchars($success) ?></div>
+        <?php endif; ?>
 
- <?php if ($page === 'creer_exercice'): ?>
-
-<div class="form-card">
-
-<form action="<?= BASE_URL ?>/admin?page=creer_exercice_traitement" method="POST" enctype="multipart/form-data">
-
-    <!-- TITRE -->
-    <div class="form-group">
-        <label for="titre">Titre</label>
-        <input type="text" name="titre" id="titre" required>
-    </div>
-
-    <!-- DESCRIPTION -->
-    <div class="form-group">
-        <label for="description">Description / Consigne</label>
-        <textarea name="description" id="description" rows="4" required></textarea>
-    </div>
-
-    <!-- BAREME -->
-    <div class="form-group">
-        <label for="bareme">Barème</label>
-        <input type="number" name="bareme" id="bareme" min="1" required>
-    </div>
-
-    <!-- DIFFICULTÉ -->
-    <div class="form-group">
-        <label for="difficulte">Difficulté</label>
-        <select name="difficulte" id="difficulte" required>
-            <?php foreach ($difficultes as $d): ?>
-                <option value="<?= htmlspecialchars($d) ?>">
-                    <?= ucfirst($d) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-
-    <!-- TYPE -->
-    <div class="form-group">
-        <label for="categorie">Catégorie</label>
-        <select name="categorie" id="categorie" required>
-            <?php foreach ($types as $t): ?>
-                <option value="<?= htmlspecialchars($t) ?>">
-                    <?= ucfirst(str_replace('_', ' ', $t)) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-
-    <!-- DURÉE -->
-    <div class="form-group">
-        <label for="duree">Durée estimée (secondes)</label>
-        <input type="number" name="duree" id="duree" min="1">
-    </div>
-
-    <!-- STATUT -->
-    <div class="form-group">
-        <label for="statut">Statut</label>
-        <select name="statut" id="statut">
-            <option value="actif">Actif</option>
-            <option value="inactif">Inactif</option>
-            <option value="brouillon">Brouillon</option>
-        </select>
-    </div>
-
-    <!-- NOMBRE DE QUESTIONS -->
-    <div class="form-group">
-        <label for="nbquestions">Nombre de questions</label>
-        <input type="number" name="nbquestions" id="nbquestions" min="1">
-    </div>
-
-    <!-- CONTENEUR QUESTIONS -->
-    <div id="questions-container"></div>
-
-    <!-- BOUTON -->
-    <button type="submit" class="btn-submit">Créer l'exercice</button>
-
-</form>
-
-<h3>Aperçu JSON généré</h3>
-<pre id="json-preview" style="background:#111;color:#0f0;padding:20px;border-radius:10px;"></pre>
-
-</div>
-
-
-<?php elseif ( $page === 'creer_test'): ?>
-
- <div class="form-card">
-
-        <h2>Créer un test</h2>
-
-        <form action="<?= BASE_URL ?>/admin?page=creer_test_traitement" method="POST">
-
-
-            <div class="form-group">
-                <label for="titre_test">Titre du test</label>
-                <input type="text" name="titre_test" id="titre_test" required>
+        <!-- ── PAGE EXERCICES (accueil section) ── -->
+        <?php if ($page === 'exercices'): ?>
+            <div class="page-hero">
+                <a href="<?= BASE_URL ?>/admin?page=creer_exercice" class="create-exo-btn">
+                    Créer un exercice
+                </a>
+                <a href="<?= BASE_URL ?>/admin?page=liste_exercice" class="create-exo-btn btn-outline">
+                    Voir les exercices
+                </a>
             </div>
 
-            <div class="form-group">
-                <label for="duree">Durée (minutes)</label>
-                <input type="number" name="duree" id="duree" min="1" value="60" required>
-            </div>
+        <!-- ── PAGE CRÉER UN EXERCICE ── -->
+        <?php elseif ($page === 'creer_exercice'): ?>
+            <div class="page-wrap">
+                <h2>Créer un exercice</h2>
 
-            <div class="form-group">
-                <label>Jeux à inclure</label>
-                <?php foreach ($jeux as $jeu): ?>
-                    <div class="checkbox-line">
-                        <label>
-                            <input type="checkbox" name="jeux[]" value="<?= $jeu['id_jeux'] ?>">
-                            <?= htmlspecialchars($jeu['titre']) ?>
-                            (<?= $jeu['type'] ?> - <?= $jeu['difficulte'] ?>)
-                        </label>
+                <?php if (!empty($errors_jeu)): ?>
+                    <div class="alert alert-error" role="alert">Veuillez corriger les erreurs ci-dessous.</div>
+                <?php endif; ?>
+
+                <form action="<?= BASE_URL ?>/admin/jeux/creer" method="POST" enctype="multipart/form-data" novalidate>
+
+                    <div class="form-group">
+                        <label for="titre">Titre</label>
+                        <input type="text" name="titre" id="titre" required
+                               value="<?= htmlspecialchars($old_jeu['titre'] ?? '') ?>">
+                        <?php if (!empty($errors_jeu['titre'])): ?>
+                            <span class="error-msg"><?= htmlspecialchars($errors_jeu['titre']) ?></span>
+                        <?php endif; ?>
                     </div>
-                <?php endforeach; ?>
-            </div>
 
-            <div class="form-group">
-                <label>Candidats concernés</label>
-                <?php foreach ($candidats as $c): ?>
-                    <div class="checkbox-line">
-                        <label>
-                            <input type="checkbox" name="candidats[]" value="<?= $c['id_candidat'] ?>">
-                            <?= htmlspecialchars($c['nom']) ?> <?= htmlspecialchars($c['prenom']) ?>
-                            (<?= htmlspecialchars($c['email']) ?>)
-                        </label>
+                    <div class="form-group">
+                        <label for="description">Description / Consigne</label>
+                        <textarea name="description" id="description" rows="4"><?= htmlspecialchars($old_jeu['description'] ?? '') ?></textarea>
                     </div>
-                <?php endforeach; ?>
+
+                    <div class="form-group">
+                        <label for="bareme">Barème (points)</label>
+                        <input type="number" name="bareme" id="bareme" min="1" required
+                               value="<?= htmlspecialchars($old_jeu['bareme'] ?? '') ?>">
+                        <?php if (!empty($errors_jeu['bareme'])): ?>
+                            <span class="error-msg"><?= htmlspecialchars($errors_jeu['bareme']) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="type">Type</label>
+                        <select name="type" id="type">
+                            <?php
+                            $types = ['qcm' => 'QCM', 'texte_libre' => 'Texte libre', 'glisser_deposer' => 'Glisser-déposer', 'association' => 'Association', 'autre' => 'Autre'];
+                            foreach ($types as $val => $label):
+                                $sel = ($old_jeu['type'] ?? '') === $val ? 'selected' : '';
+                            ?>
+                            <option value="<?= $val ?>" <?= $sel ?>><?= $label ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if (!empty($errors_jeu['type'])): ?>
+                            <span class="error-msg"><?= htmlspecialchars($errors_jeu['type']) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="difficulte">Difficulté</label>
+                        <select name="difficulte" id="difficulte">
+                            <?php
+                            $niveaux = ['facile' => 'Facile', 'moyen' => 'Moyen', 'difficile' => 'Difficile', 'expert' => 'Expert'];
+                            foreach ($niveaux as $val => $label):
+                                $sel = ($old_jeu['difficulte'] ?? 'moyen') === $val ? 'selected' : '';
+                            ?>
+                            <option value="<?= $val ?>" <?= $sel ?>><?= $label ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="statut">Statut</label>
+                        <select name="statut" id="statut">
+                            <?php
+                            $statuts = ['actif' => 'Actif', 'inactif' => 'Inactif', 'brouillon' => 'Brouillon'];
+                            foreach ($statuts as $val => $label):
+                                $sel = ($old_jeu['statut'] ?? 'brouillon') === $val ? 'selected' : '';
+                            ?>
+                            <option value="<?= $val ?>" <?= $sel ?>><?= $label ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nbquestions">Nombre de questions</label>
+                        <input type="number" name="nbquestions" id="nbquestions" min="0" value="0">
+                    </div>
+
+                    <div id="questions-container"></div>
+
+                    <button type="submit" class="btn-submit">Créer l'exercice</button>
+
+                </form>
             </div>
 
-            <button type="submit" class="btn-submit">Créer le test</button>
-
-        </form>
-
-    </div>
- <?php endif; ?>
-
-    <?php if ($page === 'etudiants'): ?>
-
+        <!-- ── PAGE LISTE DES EXERCICES ── -->
+        <?php elseif ($page === 'liste_exercice'): ?>
             <div class="table-wrap">
-                <h3>Liste des étudiants</h3>
+                <div class="table-wrap-header">
+                    <h3>Liste des exercices</h3>
+                    <a href="<?= BASE_URL ?>/admin?page=creer_exercice" class="btn-submit btn-sm">+ Nouveau</a>
+                </div>
                 <div class="table-container">
+                    <?php if (empty($liste_jeux)): ?>
+                        <p class="table-empty">Aucun exercice créé pour l'instant.</p>
+                    <?php else: ?>
                     <table>
                         <thead>
-                            <tr><th scope="col">Nom</th><th scope="col">Prénom</th><th scope="col">Groupe</th><th scope="col">Exercices</th><th scope="col">Moyenne</th><th scope="col">Statut</th></tr>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Titre</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Difficulté</th>
+                                <th scope="col">Barème</th>
+                                <th scope="col">Statut</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            <tr><td>Dupont</td><td>Alice</td><td>Groupe A</td><td>12</td><td>15/20</td><td><span class="badge badge-green">Actif</span></td></tr>
-                            <tr><td>Martin</td><td>Bob</td><td>Groupe B</td><td>8</td><td>11/20</td><td><span class="badge badge-green">Actif</span></td></tr>
-                            <tr><td>Bernard</td><td>Clara</td><td>Groupe A</td><td>5</td><td>9/20</td><td><span class="badge badge-red">Inactif</span></td></tr>
+                            <?php foreach ($liste_jeux as $jeu): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($jeu['id_jeux']) ?></td>
+                                <td><?= htmlspecialchars($jeu['titre']) ?></td>
+                                <td><?= htmlspecialchars($jeu['type']) ?></td>
+                                <td><?= htmlspecialchars($jeu['difficulte']) ?></td>
+                                <td><?= htmlspecialchars($jeu['bareme']) ?></td>
+                                <td>
+                                    <?php
+                                    $badgeClass = match($jeu['statut']) {
+                                        'actif'    => 'badge-green',
+                                        'inactif'  => 'badge-red',
+                                        default    => 'badge-orange',
+                                    };
+                                    ?>
+                                    <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($jeu['statut']) ?></span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
+                    <?php endif; ?>
                 </div>
             </div>
 
+        <!-- ── PAGE TESTS (accueil section) ── -->
+        <?php elseif ($page === 'tests'): ?>
+            <div class="page-hero">
+                <a href="<?= BASE_URL ?>/admin?page=create_test" class="create-exo-btn">
+                    Créer un test
+                </a>
+            </div>
+
+        <!-- ── PAGE CRÉER UN TEST ── -->
+        <?php elseif ($page === 'create_test'): ?>
+            <div class="page-wrap">
+                <h2>Créer un test</h2>
+
+                <?php if (!empty($errors_test)): ?>
+                    <div class="alert alert-error" role="alert">Veuillez corriger les erreurs ci-dessous.</div>
+                <?php endif; ?>
+
+                <form id="creation_test" action="<?= BASE_URL ?>/admin/tests/creer" method="POST" novalidate>
+
+                    <div class="form-group">
+                        <label for="titre">Titre de l'épreuve</label>
+                        <input type="text" name="titre" id="titre" required
+                               value="<?= htmlspecialchars($old_test['titre'] ?? '') ?>">
+                        <?php if (!empty($errors_test['titre'])): ?>
+                            <span class="error-msg"><?= htmlspecialchars($errors_test['titre']) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="duree">Durée (en minutes)</label>
+                        <input type="number" name="duree" id="duree" min="1" required
+                               value="<?= htmlspecialchars($old_test['duree'] ?? '') ?>">
+                        <?php if (!empty($errors_test['duree'])): ?>
+                            <span class="error-msg"><?= htmlspecialchars($errors_test['duree']) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <p class="form-label">Exercices inclus</p>
+                        <?php if (empty($liste_jeux)): ?>
+                            <p class="hint-text">Aucun exercice disponible.
+                                <a href="<?= BASE_URL ?>/admin?page=creer_exercice">Créer un exercice d'abord.</a>
+                            </p>
+                        <?php else: ?>
+                        <div class="checkbox-list">
+                            <?php foreach ($liste_jeux as $jeu): ?>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="jeux[]" value="<?= $jeu['id_jeux'] ?>"
+                                    <?= in_array($jeu['id_jeux'], $old_test['jeux'] ?? []) ? 'checked' : '' ?>>
+                                <?= htmlspecialchars($jeu['titre']) ?>
+                                <span class="hint">(<?= htmlspecialchars($jeu['type']) ?>, <?= htmlspecialchars($jeu['bareme']) ?> pts)</span>
+                            </label>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php endif; ?>
+                        <?php if (!empty($errors_test['jeux'])): ?>
+                            <span class="error-msg"><?= htmlspecialchars($errors_test['jeux']) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Créer le test</button>
+
+                </form>
+            </div>
+
+        <!-- ── PAGE DÉTAIL D'UNE ÉPREUVE ── -->
+        <?php elseif ($page === 'epreuve'): ?>
+            <div class="table-wrap">
+                <?php if (!$epreuve): ?>
+                    <p class="table-empty">Épreuve introuvable.</p>
+                <?php else: ?>
+                    <div class="table-wrap-header">
+                        <h3><?= htmlspecialchars($epreuve['titre']) ?></h3>
+                        <span class="badge <?= $epreuve['statut'] === 'actif' ? 'badge-green' : 'badge-orange' ?>">
+                            <?= htmlspecialchars($epreuve['statut']) ?>
+                        </span>
+                    </div>
+                    <div class="epreuve-meta">
+                        <span><strong>Durée :</strong> <?= (int)($epreuve['duree_minutes'] ?? $epreuve['duree'] ?? 0) ?> min</span>
+                        <?php if (!empty($epreuve['description'])): ?>
+                        <p><strong>Description :</strong> <?= htmlspecialchars($epreuve['description']) ?></p>
+                        <?php endif; ?>
+                    </div>
+                    <h4 class="section-title">Exercices inclus</h4>
+                    <div class="table-container">
+                        <?php if (empty($jeux_epreuve)): ?>
+                            <p class="table-empty">Aucun exercice associé à ce test.</p>
+                        <?php else: ?>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Titre</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Difficulté</th>
+                                    <th scope="col">Barème</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($jeux_epreuve as $jeu): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($jeu['titre']) ?></td>
+                                    <td><?= htmlspecialchars($jeu['type']) ?></td>
+                                    <td><?= htmlspecialchars($jeu['difficulte']) ?></td>
+                                    <td><?= htmlspecialchars($jeu['bareme']) ?> pts</td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+        <!-- ── PAGE ÉTUDIANTS (accueil section) ── -->
+        <?php elseif ($page === 'etudiants'): ?>
+            <div class="page-hero">
+                <a href="<?= BASE_URL ?>/admin?page=liste_candidat" class="create-exo-btn">
+                    Voir les candidats
+                </a>
+                <a href="<?= BASE_URL ?>/admin?page=attribution_test" class="create-exo-btn btn-outline">
+                    Attribuer un test
+                </a>
+            </div>
+
+        <!-- ── PAGE LISTE DES CANDIDATS ── -->
+        <?php elseif ($page === 'liste_candidat'): ?>
+            <div class="table-wrap">
+                <div class="table-wrap-header">
+                    <h3>Liste des candidats</h3>
+                </div>
+                <div class="table-container">
+                    <?php if (empty($candidats)): ?>
+                        <p class="table-empty">Aucun candidat inscrit pour l'instant.</p>
+                    <?php else: ?>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Nom</th>
+                                <th scope="col">Prénom</th>
+                                <th scope="col">E-mail</th>
+                                <th scope="col">Date de naissance</th>
+                                <th scope="col">Code accès</th>
+                                <th scope="col">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($candidats as $candidat): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($candidat['id_candidat']) ?></td>
+                                <td><?= htmlspecialchars($candidat['nom']) ?></td>
+                                <td><?= htmlspecialchars($candidat['prenom']) ?></td>
+                                <td><?= htmlspecialchars($candidat['email']) ?></td>
+                                <td><?= htmlspecialchars($candidat['date_naissance'] ?? '—') ?></td>
+                                <td><?= htmlspecialchars($candidat['code_acces'] ?? '—') ?></td>
+                                <td>
+                                    <?php
+                                    $badgeClass = match($candidat['statut']) {
+                                        'actif'     => 'badge-green',
+                                        'suspendu'  => 'badge-red',
+                                        default     => 'badge-orange',
+                                    };
+                                    ?>
+                                    <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($candidat['statut']) ?></span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+        <!-- ── PAGE ATTRIBUTION DU TEST ── -->
+        <?php elseif ($page === 'attribution_test'): ?>
+            <div class="page-wrap">
+                <h2>Attribution d'une épreuve</h2>
+
+                <?php if (!empty($errors_attribution)): ?>
+                    <div class="alert alert-error" role="alert">Veuillez corriger les erreurs ci-dessous.</div>
+                <?php endif; ?>
+
+                <form action="<?= BASE_URL ?>/admin/attribution" method="POST" novalidate>
+
+                    <div class="form-group">
+                        <label for="candidat">Candidat</label>
+                        <select name="candidat" id="candidat" required>
+                            <option value="">-- Sélectionner un candidat --</option>
+                            <?php foreach ($candidats as $candidat): ?>
+                            <option value="<?= $candidat['id_candidat'] ?>"
+                                <?= ($old_attribution['candidat'] ?? '') == $candidat['id_candidat'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($candidat['nom'] . ' ' . $candidat['prenom']) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if (!empty($errors_attribution['candidat'])): ?>
+                            <span class="error-msg"><?= htmlspecialchars($errors_attribution['candidat']) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="test">Épreuve</label>
+                        <select name="test" id="test" required>
+                            <option value="">-- Sélectionner une épreuve --</option>
+                            <?php foreach ($tests as $test): ?>
+                            <option value="<?= $test['id_test'] ?>"
+                                <?= ($old_attribution['test'] ?? '') == $test['id_test'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($test['titre']) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if (!empty($errors_attribution['test'])): ?>
+                            <span class="error-msg"><?= htmlspecialchars($errors_attribution['test']) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Attribuer le test</button>
+
+                </form>
+            </div>
+
+        <!-- ── PAGE STATISTIQUES ── -->
         <?php elseif ($page === 'statistiques'): ?>
             <div class="table-wrap">
-                <h3>Statistiques globales</h3>
+                <div class="table-wrap-header">
+                    <h3>Statistiques globales</h3>
+                </div>
                 <div class="table-container">
                     <table>
                         <thead>
-                            <tr><th scope="col">Exercice</th><th scope="col">Réussite</th><th scope="col">Tentatives</th><th scope="col">Moyenne</th></tr>
+                            <tr>
+                                <th scope="col">Exercice</th>
+                                <th scope="col">Taux de réussite</th>
+                                <th scope="col">Tentatives</th>
+                                <th scope="col">Moyenne</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            <tr><td>Exercice 1</td><td><span class="badge badge-green">87%</span></td><td>45</td><td>14.2/20</td></tr>
-                            <tr><td>Exercice 2</td><td><span class="badge badge-orange">63%</span></td><td>38</td><td>11.5/20</td></tr>
-                            <tr><td>Exercice 3</td><td><span class="badge badge-red">41%</span></td><td>52</td><td>9.1/20</td></tr>
+                            <?php if (!empty($liste_jeux)): ?>
+                                <?php foreach ($liste_jeux as $jeu): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($jeu['titre']) ?></td>
+                                    <td><span class="badge badge-orange">—</span></td>
+                                    <td>—</td>
+                                    <td>—</td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="4" style="text-align:center;color:#999;">Aucune donnée disponible.</td></tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
+
         <?php endif; ?>
+
     </main>
+
 </div>
 
 <footer>
+    <div class="footer-left">
+        <a href="#">About</a>
+        <a href="#">Politique</a>
+        <a href="#">CGU</a>
+    </div>
     <div class="footer-center"><strong>CodeWarden</strong></div>
+    <div class="footer-right">Administration</div>
 </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var nbInput = document.getElementById('nbquestions');
+    if (!nbInput) return;
+
+    nbInput.addEventListener('change', function () {
+        var nb        = Math.max(0, parseInt(this.value) || 0);
+        var container = document.getElementById('questions-container');
+        container.innerHTML = '';
+        for (var i = 1; i <= nb; i++) {
+            container.innerHTML += '<div class="question-block">'
+                + '<h3>Question ' + i + '</h3>'
+                + '<div class="form-group"><label for="question_intitule_' + i + '">Intitulé</label>'
+                + '<textarea id="question_intitule_' + i + '" name="question_intitule_' + i + '" rows="2" required></textarea></div>'
+                + '<div class="form-group"><label for="question_points_' + i + '">Points</label>'
+                + '<input type="number" id="question_points_' + i + '" name="question_points_' + i + '" min="1" value="1" required></div>'
+                + '<div class="form-group"><label for="question_type_' + i + '">Type</label>'
+                + '<select id="question_type_' + i + '" name="question_type_' + i + '">'
+                + '<option value="texte">Réponse texte</option>'
+                + '<option value="qcm">QCM</option>'
+                + '</select></div>'
+                + '<div class="form-group"><label for="question_bonne_' + i + '">Bonne réponse (si QCM)</label>'
+                + '<input type="text" id="question_bonne_' + i + '" name="question_bonne_' + i + '"></div>'
+                + '</div>';
+        }
+    });
+});
+</script>
 
 </body>
 

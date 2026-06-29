@@ -27,10 +27,10 @@ elseif  ($methode === 'GET'  && $url === '/admin/login')  page_connexion_admin()
 elseif  ($methode === 'POST' && $url === '/admin/login')  traiter_connexion_admin();
 elseif  ($methode === 'GET'  && $url === '/admin/logout') deconnecter_admin();
 elseif  ($methode === 'GET'  && $url === '/admin')        tableau_de_bord();
-elseif  ($methode === 'GET'  && $url === '/candidat')     page_candidat();
-elseif ($methode === 'POST' && $url === '/admin/jeux/creer') traiter_creation_jeux();
-
-
+elseif  ($methode === 'GET'  && $url === '/candidat')          page_candidat();
+elseif  ($methode === 'POST' && $url === '/admin/jeux/creer')  traiter_creation_jeu();
+elseif  ($methode === 'POST' && $url === '/admin/tests/creer') traiter_creation_test();
+elseif  ($methode === 'POST' && $url === '/admin/attribution') traiter_attribution_test();
 else {
     http_response_code(404);
     echo '<h1>404 – Page non trouvée</h1>';
