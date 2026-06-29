@@ -56,7 +56,7 @@
 
         var data = new FormData(form);
 
-        fetch('<?= BASE_URL ?>/profile', {
+        fetch(window.BASE_URL + '/profile', {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data

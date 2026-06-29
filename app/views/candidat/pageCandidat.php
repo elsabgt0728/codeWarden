@@ -390,6 +390,7 @@ $page = $page ?? 'dashboard';
     </div>
 </div>
 
+<script>window.BASE_URL = '<?= BASE_URL ?>';</script>
 <script src="<?= BASE_URL ?>/public/assets/js/candidat.js"></script>
 <script src="<?= BASE_URL ?>/public/assets/js/test.js"></script>
 </body>
