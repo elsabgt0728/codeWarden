@@ -1,187 +1,145 @@
-function debug(msg) {
-    let box = document.getElementById("debugBox");
-    if (!box) {
-        box = document.createElement("div");
-        box.id = "debugBox";
-        box.style.position = "fixed";
-        box.style.bottom = "10px";
-        box.style.left = "10px";
-        box.style.padding = "10px";
-        box.style.background = "rgba(0,0,0,0.7)";
-        box.style.color = "white";
-        box.style.zIndex = "999999";
-        box.style.fontSize = "14px";
-        document.body.appendChild(box);
-    }
-    box.textContent = msg;
+// ── Séquence multi-jeux ─────────────────────────────────────────────────────
+const iframe       = document.getElementById('game-frame');
+const transitionEl = document.getElementById('transition-screen');
+const btnSuivant   = document.getElementById('btn-suivant');
+
+// Restaurer la progression depuis les scores déjà enregistrés en base (refresh)
+const scoresInitiaux = typeof SCORES_EXISTANTS !== 'undefined' ? SCORES_EXISTANTS : [];
+const scores = scoresInitiaux.map(function(s) {
+    const jeu = (typeof JEUX !== 'undefined' ? JEUX : []).find(function(j) { return j.id === s.id_jeux; });
+    return { score: s.score, bareme: jeu ? jeu.bareme : 1 };
+});
+let currentJeu = scores.length;
+
+function chargerJeu(index) {
+    const el = document.getElementById('jeu-courant');
+    if (el) el.textContent = index + 1;
+    iframe.srcdoc = JEUX[index].html;
 }
 
+function afficherTransition() {
+    if (!transitionEl) { chargerJeu(currentJeu); return; }
 
-document.addEventListener('DOMContentLoaded', () => {
+    // Précharger le jeu suivant dans l'iframe pendant que l'overlay est affiché
+    chargerJeu(currentJeu);
 
-    let current = 0;
+    const restant = JEUX.length - currentJeu;
+    document.getElementById('transition-titre').textContent =
+        'Exercice ' + currentJeu + ' / ' + JEUX.length + ' terminé !';
+    document.getElementById('transition-sub').textContent =
+        restant + ' exercice' + (restant > 1 ? 's' : '') + ' restant' + (restant > 1 ? 's' : '');
+    btnSuivant.textContent =
+        currentJeu === JEUX.length - 1 ? 'Dernier exercice →' : 'Exercice suivant →';
 
-    const questions = document.querySelectorAll('.question');
-    const btnPrev = document.querySelector('.question-nav .btn-nav:first-child');
-    const btnNext = document.querySelector('.question-nav .btn-nav:last-child');
-    const boxes = document.getElementById('box-container');
-    const progress = document.getElementById('progres');
-    const count = document.getElementById('count');
-    const submitBtn = document.getElementById('submit');
+    transitionEl.style.display = 'flex';
+}
 
-    if (!questions.length) {
-        console.error("Aucune question trouvée !");
-        return;
+// Clic sur "Exercice suivant" — le jeu est déjà chargé, on retire l'overlay
+if (btnSuivant) {
+    btnSuivant.addEventListener('click', function() {
+        transitionEl.style.display = 'none';
+    });
+}
+
+// Démarrage : reprendre au bon jeu
+if (typeof JEUX !== 'undefined' && JEUX.length > 0) {
+    if (currentJeu >= JEUX.length) {
+        // Tous les jeux déjà joués avant le refresh — soumettre directement
+        soumettreTout();
+    } else {
+        chargerJeu(currentJeu);
     }
+}
 
-    // Génération des cases numérotées
-    questions.forEach((q, i) => {
-        const div = document.createElement('div');
-        div.classList.add('question-box');
-        if (i === 0) div.classList.add('active');
-        div.textContent = i + 1;
-        div.dataset.index = i;
-        boxes.appendChild(div);
+// Réception du score d'un jeu terminé
+window.addEventListener('message', function(e) {
+    if (!e.data || e.data.type !== 'cw_result') return;
+
+    var jeuIndex = currentJeu;
+    var scoreVal = Number(e.data.score) || 0;
+
+    scores.push({
+        score:  scoreVal,
+        bareme: JEUX[jeuIndex] ? JEUX[jeuIndex].bareme : 1,
     });
 
-    // Vérifie si toutes les questions ont une réponse
-    function checkCompletion() {
-        let answered = 0;
-
-        questions.forEach((q, i) => {
-            if (document.querySelector(`input[name="q${i}"]:checked`)) {
-                answered++;
-            }
-        });
-
-        submitBtn.disabled = answered !== questions.length;
-
-        let percent = Math.round((answered / questions.length) * 100);
-        progress.style.width = percent + "%";
-        count.textContent = percent;
-    }
-
-    // Mise à jour affichage navigation
-    function updateDisplay() {
-        questions.forEach((q, i) => {
-            q.style.display = (i === current) ? 'block' : 'none';
-        });
-
-        btnPrev.disabled = current === 0;
-        btnNext.disabled = current === questions.length - 1;
-
-        document.querySelectorAll('.question-box').forEach(box => {
-            box.classList.remove('active');
-            if (parseInt(box.dataset.index) === current) {
-                box.classList.add('active');
-            }
+    // Sauvegarde immédiate en base → le refresh reprend au bon jeu
+    if (JEUX[jeuIndex]) {
+        fetch(BASE_URL + '/candidat/score-jeu', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ id_passage: ID_PASSAGE, id_jeu: JEUX[jeuIndex].id, score: scoreVal })
         });
     }
 
-    // Navigation boutons
-    btnNext.addEventListener('click', () => {
-        if (current < questions.length - 1) {
-            current++;
-            updateDisplay();
-        }
-    });
+    currentJeu++;
 
-    btnPrev.addEventListener('click', () => {
-        if (current > 0) {
-            current--;
-            updateDisplay();
-        }
-    });
-
-    // Navigation via les cases numérotées
-    document.querySelectorAll('.question-box').forEach(box => {
-        box.addEventListener('click', () => {
-            current = parseInt(box.dataset.index);
-            updateDisplay();
-        });
-    });
-
-    // Quand l’utilisateur sélectionne une réponse
-    document.querySelectorAll('input[type="radio"]').forEach(radio => {
-        radio.addEventListener('change', () => {
-    checkCompletion();
-
-    // Marquer la question comme répondue
-    const qIndex = parseInt(radio.name.replace("q", ""));
-    const box = document.querySelector(`.question-box[data-index="${qIndex}"]`);
-    if (box) {
-        box.classList.add('answered');
+    if (currentJeu < JEUX.length) {
+        afficherTransition();   // overlay + précharge jeu suivant
+    } else {
+        soumettreTout();        // tous terminés → soumettre
     }
 });
 
+function soumettreTout() {
+    // Score global = moyenne pondérée par barème
+    const totalBareme = scores.reduce(function(s, g) { return s + g.bareme; }, 0);
+    const scoreGlobal = totalBareme > 0
+        ? Math.round(scores.reduce(function(s, g) { return s + (g.score / 100 * g.bareme); }, 0) / totalBareme * 100)
+        : Math.round(scores.reduce(function(s, g) { return s + g.score; }, 0) / scores.length);
+
+    // Détail par jeu pour stockage en base — on envoie TOUS les jeux (y compris ceux restaurés)
+    const scoresJeux = scores.map(function(g, i) {
+        return { id_jeu: JEUX[i] ? JEUX[i].id : 0, score: g.score };
     });
 
-    // Redirection quand le test est terminé
-    submitBtn.addEventListener('click', () => {
-        if (!submitBtn.disabled) {
-            window.location.href = BASE_URL + "/candidat?page=finish";
-        }
-    });
-
-    // Initialisation
-    updateDisplay();
-    checkCompletion();
-});
-
-let timeLeft = TEST_DURATION; // secondes
-let alertShown = false;
-
-const timerElement = document.getElementById("timer");
-
-function updateTimer() {
-
-    debug("timeLeft = " + timeLeft); // 🔍 DEBUG
-
-    let minutes = Math.floor(timeLeft / 60);
-    let seconds = timeLeft % 60;
-
-    timerElement.textContent =
-        minutes + "m " + (seconds < 10 ? "0" : "") + seconds + "s";
-
-    // 🔥 Alerte visuelle à 10 secondes
-    if (timeLeft <= 10 && !alertShown) {
-        alertShown = true;
-        timerElement.classList.add("timer-alert");
-        debug("ALERTE TRIGGER"); // 🔍 DEBUG
-    }
-
-    // ⏰ Temps écoulé → expire + redirection
-    if (timeLeft <= 0) {
-        debug("EXPIRE TRIGGER"); // 🔍 DEBUG
-
-        clearInterval(timerInterval);
-
-    fetch(BASE_URL + "/candidat?page=expire", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            id_passage: ID_PASSAGE,
-            id_test: ID_TEST
+    fetch(BASE_URL + '/candidat/terminer', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+            id_passage:  ID_PASSAGE,
+            id_test:     ID_TEST,
+            score:       scoreGlobal,
+            scores_jeux: scoresJeux,
         })
     })
-    .then(response => {
-        debug("FETCH STATUS = " + response.status);
-
-        if (!response.ok) {
-            debug("FETCH FAILED: " + response.status);
-            return;
-        }
-
-        debug("REDIRECTION...");
-        window.location.href =
-            BASE_URL + "/candidat?page=finish&id_passage=" + ID_PASSAGE;
-    })
-    .catch(err => {
-        debug("FETCH ERROR: " + err);
+    .then(function(r) { return r.json(); })
+    .then(function(data) { window.location.href = data.redirect; })
+    .catch(function() {
+        window.location.href = BASE_URL + '/candidat?page=finish&id_passage=' + ID_PASSAGE;
     });
+}
 
+// ── Timer (compte à rebours) ─────────────────────────────────────────────────
+const dureeTotal   = typeof TEST_DURATION  !== 'undefined' ? TEST_DURATION  : 0;
+const tempsEcoule  = typeof TEMPS_ECOULE   !== 'undefined' ? TEMPS_ECOULE   : 0;
+let timeLeft       = Math.max(0, dureeTotal - tempsEcoule);
+let alertShown = false;
+const timerEl  = document.getElementById('timer');
 
+function updateTimer() {
+    if (!timerEl) return;
 
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerEl.textContent = minutes + 'm ' + (seconds < 10 ? '0' : '') + seconds + 's';
+
+    if (timeLeft <= 10 && !alertShown) {
+        alertShown = true;
+        timerEl.classList.add('timer-alert');
+    }
+
+    if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        fetch(BASE_URL + '/candidat/expirer', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ id_passage: ID_PASSAGE, id_test: ID_TEST })
+        })
+        .then(function() {
+            window.location.href = BASE_URL + '/candidat?page=finish&id_passage=' + ID_PASSAGE;
+        })
+        .catch(function() { window.location.href = BASE_URL + '/candidat'; });
         return;
     }
 

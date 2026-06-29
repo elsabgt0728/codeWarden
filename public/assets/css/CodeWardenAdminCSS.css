@@ -352,6 +352,31 @@ footer {
   background: #f0f0f0;
 }
 
+/* ── Boutons d'action dans les tableaux ── */
+.btn-action {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: opacity .15s;
+}
+.btn-action:hover { opacity: .82; }
+.btn-edit   { background: #e8f4ff; color: #0057b8; }
+.btn-delete { background: #fee2e2; color: #b91c1c; }
+.btn-admis  { background: #dcfce7; color: #15803d; }
+.btn-action:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Badge statut */
+.badge-statut    { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 700; text-transform: capitalize; }
+.badge-actif     { background: #dcfce7; color: #15803d; }
+.badge-inactif   { background: #f3f4f6; color: #6b7280; }
+.badge-brouillon { background: #fef9c3; color: #92400e; }
+.badge-archive   { background: #e5e7eb; color: #374151; }
+
 .question-block {
   background: rgba(255,255,255,0.12);
   padding: 20px;

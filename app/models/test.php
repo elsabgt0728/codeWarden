@@ -38,6 +38,34 @@ function test_recuperer_par_id($id_test) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+function test_mettre_a_jour($id, $titre, $duree, $statut)
+{
+    $db = connecter_bdd();
+    $stmt = $db->prepare("UPDATE test SET titre=?, duree_minutes=?, statut=? WHERE id_test=?");
+    return $stmt->execute([$titre, $duree, $statut, $id]);
+}
+
+function test_supprimer($id)
+{
+    $db = connecter_bdd();
+    // SESSION référence TEST avec RESTRICT — vider les dépendances d'abord
+    $sessions = $db->prepare("SELECT id_session FROM session WHERE id_test = ?");
+    $sessions->execute([$id]);
+    foreach ($sessions->fetchAll(PDO::FETCH_ASSOC) as $s) {
+        $sid = $s['id_session'];
+        // PASSAGE_TEST référence SESSION avec RESTRICT — supprimer (REPONSE et RESULTAT cascadent)
+        $passages = $db->prepare("SELECT id_passage_test FROM passage_test WHERE id_session = ?");
+        $passages->execute([$sid]);
+        foreach ($passages->fetchAll(PDO::FETCH_ASSOC) as $p) {
+            $db->prepare("DELETE FROM passage_test WHERE id_passage_test = ?")->execute([$p['id_passage_test']]);
+        }
+        // SESSION (CONVOCATION cascade)
+        $db->prepare("DELETE FROM session WHERE id_session = ?")->execute([$sid]);
+    }
+    // TEST (TEST_JEUX cascade)
+    $db->prepare("DELETE FROM test WHERE id_test = ?")->execute([$id]);
+}
+
 function test_recuperer_jeux($id_test) {
     $db = connecter_bdd();
     $stmt = $db->prepare("

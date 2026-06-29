@@ -12,5 +12,8 @@ require_once ROOT . '/app/middlewares/auth.php';
 require_once ROOT . '/app/controllers/auth_controller.php';
 require_once ROOT . '/app/controllers/candidat_controller.php';
 require_once ROOT . '/app/controllers/admin_controller.php';
+require_once ROOT . '/app/controllers/jeux_controller.php';
+require_once ROOT . '/app/controllers/test_controller.php';
+require_once ROOT . '/app/controllers/api_stats_controller.php';
 
 require ROOT . '/routes/web.php';

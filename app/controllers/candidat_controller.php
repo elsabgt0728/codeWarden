@@ -2,48 +2,79 @@
 
 require_once ROOT . "/app/models/test.php";
 
-
-function page_candidat(){
-
+function page_candidat()
+{
     $page = $_GET['page'] ?? 'dashboard';
-
     verifier_candidat();
-    $user = trouver_candidat_par_id($_SESSION["id_candidat"]);
+    $user = trouver_candidat_par_id($_SESSION['id_candidat']);
 
     if ($page === 'test') {
-
         $id_test = $_GET['id_test'] ?? null;
-
-        if (!$id_test) {
-            die("Aucun test sélectionné.");
-        }
+        if (!$id_test) die("Aucun test sélectionné.");
 
         $test = test_recuperer_par_id($id_test);
+        if (!$test) die("Test introuvable.");
 
-        if (!$test) {
-            die("Test introuvable.");
+        // Vérifier que ce candidat est bien convoqué pour ce test
+        require_once ROOT . '/app/models/convocation.php';
+        if (!candidat_est_convoque((int)$_SESSION['id_candidat'], (int)$id_test)) {
+            http_response_code(403);
+            die("Accès refusé : vous n'êtes pas convoqué(e) pour ce test.");
         }
 
-        $jeux = test_recuperer_jeux($id_test);
-        $questions = [];
+        // Vérifier que le candidat n'a pas déjà passé ce test
+        if (candidat_a_deja_passe((int)$_SESSION['id_candidat'], (int)$id_test)) {
+            die("Vous avez déjà passé ce test. Consultez votre tableau de bord pour voir vos résultats.");
+        }
 
-        if (!empty($jeux)) {
-            foreach ($jeux as $jeu) {
-                if (!empty($jeu['contenu_json'])) {
-                    $json = json_decode($jeu['contenu_json'], true);
-                    if (!empty($json['questions'])) {
-                        foreach ($json['questions'] as $q) {
-                            $questions[] = $q;
-                        }
-                    }
-                }
+        // Récupérer tous les jeux HTML du test (dans l'ordre)
+        $jeux_bruts = test_recuperer_jeux($id_test);
+        $jeux_liste = [];
+        foreach ($jeux_bruts as $jeu) {
+            if (!empty($jeu['contenu_html'])) {
+                $jeux_liste[] = [
+                    'id_jeux'      => (int)$jeu['id_jeux'],
+                    'titre'        => $jeu['titre'],
+                    'bareme'       => (int)$jeu['bareme'],
+                    'contenu_html' => $jeu['contenu_html'],
+                ];
             }
         }
+        if (empty($jeux_liste)) die("Aucun jeu HTML disponible pour ce test.");
+
+        // Créer ou récupérer un passage en cours
+        require_once ROOT . '/app/models/passageTest.php';
+        require_once ROOT . '/app/models/session.php';
+        require_once ROOT . '/app/models/resultat.php';
+
+        $passage_existant = passage_test_en_cours((int) $_SESSION['id_candidat']);
+        if ($passage_existant) {
+            $id_passage = (int) $passage_existant['id_passage_test'];
+        } else {
+            $session = session_recuperer_par_test((int) $id_test);
+            if (!$session) die("Aucune session active pour ce test.");
+            $id_passage = (int) creer_passage_test((int) $_SESSION['id_candidat'], (int) $session['id_session']);
+            $passage_existant = passage_test_en_cours((int) $_SESSION['id_candidat']);
+        }
+
+        // Temps déjà écoulé (timer reprend où il en était après refresh)
+        $temps_ecoule = 0;
+        if ($passage_existant && !empty($passage_existant['date_debut'])) {
+            $temps_ecoule = max(0, time() - strtotime($passage_existant['date_debut']));
+        }
+
+        // Jeux déjà joués (progression restaurée après refresh)
+        $scores_existants = reponses_scores_par_passage($id_passage);
 
         afficher_vue('candidat/pageCandidat', [
-            'questions' => $questions,
-            'duree'     => $test['duree_minutes'],
-            'user'      => $user,
+            'page'             => 'test',
+            'jeux_liste'       => $jeux_liste,
+            'duree'            => (int) $test['duree_minutes'],
+            'user'             => $user,
+            'id_passage'       => $id_passage,
+            'id_test'          => (int) $id_test,
+            'temps_ecoule'     => $temps_ecoule,
+            'scores_existants' => $scores_existants,
         ]);
         return;
     }
@@ -59,11 +90,43 @@ function page_candidat(){
     }
 
     // dashboard par défaut
-    afficher_vue("candidat/pageCandidat", [
-        "user" => $user,
+    require_once ROOT . '/app/models/convocation.php';
+    require_once ROOT . '/app/models/passageTest.php';
+
+    $test_info       = convocation_candidat((int) $_SESSION['id_candidat']);
+    $passage_termine = passage_test_termine_avec_resultat((int) $_SESSION['id_candidat']);
+
+    afficher_vue('candidat/pageCandidat', [
+        'page'             => 'dashboard',
+        'user'             => $user,
+        'test_info'        => $test_info,
+        'passage_termine'  => $passage_termine,
     ]);
 }
 
+function candidat_enregistrer_score_jeu()
+{
+    verifier_candidat();
+    require_once ROOT . '/app/models/resultat.php';
+
+    $data       = json_decode(file_get_contents('php://input'), true) ?? [];
+    $id_passage = (int)($data['id_passage'] ?? 0);
+    $id_jeu     = (int)($data['id_jeu']     ?? 0);
+    $score      = (float)($data['score']    ?? 0);
+
+    if (!$id_passage || !$id_jeu) {
+        http_response_code(400);
+        header('Content-Type: application/json');
+        echo json_encode(['erreur' => 'Requête invalide']);
+        exit;
+    }
+
+    enregistrer_score_jeu($id_passage, $id_jeu, $score);
+
+    header('Content-Type: application/json');
+    echo json_encode(['ok' => true]);
+    exit;
+}
 
 function candidat_terminer_test()
 {
@@ -71,37 +134,38 @@ function candidat_terminer_test()
 
     require_once ROOT . '/app/models/passageTest.php';
     require_once ROOT . '/app/models/resultat.php';
-    require_once ROOT . '/app/models/test.php';
 
-    $id_passage = $_POST['id_passage'] ?? null;
-    $id_test    = $_POST['id_test']    ?? null;
-    $reponses   = $_POST['reponses']   ?? null;
+    // Le jeu HTML envoie un JSON body avec le score directement
+    $data = json_decode(file_get_contents('php://input'), true) ?? [];
 
-    if (!$id_passage || !$id_test || !$reponses) {
-        die("Requête invalide.");
-    }
+    $id_passage  = $data['id_passage']  ?? null;
+    $id_test     = $data['id_test']     ?? null;
+    $score       = (float)($data['score'] ?? 0);
+    $scores_jeux = $data['scores_jeux'] ?? [];
 
-    $jeux = test_recuperer_jeux($id_test);
-    $questions = [];
-
-    foreach ($jeux as $jeu) {
-        $json = json_decode($jeu['contenu_json'], true);
-        foreach ($json['questions'] as $q) {
-            $questions[] = $q;
-        }
-    }
-
-    $score = 0;
-    foreach ($questions as $i => $q) {
-        if (isset($reponses[$i]) && $reponses[$i] == $q['bonne_reponse']) {
-            $score++;
-        }
+    if (!$id_passage || !$id_test) {
+        http_response_code(400);
+        header('Content-Type: application/json');
+        echo json_encode(['erreur' => 'Requête invalide']);
+        exit;
     }
 
     terminer_passage_test($id_passage, $score);
-    creer_resultat($id_passage, $score);
 
-    header("Location: " . BASE_URL . "/candidat?page=finish&id_passage=$id_passage");
+    $existant = resultat_par_passage($id_passage);
+    if (!$existant) creer_resultat($id_passage, $score);
+
+    // Sauvegarder le score de chaque jeu individuel
+    foreach ($scores_jeux as $sg) {
+        $id_jeu     = (int)($sg['id_jeu'] ?? 0);
+        $score_jeu  = (float)($sg['score'] ?? 0);
+        if ($id_jeu > 0) enregistrer_score_jeu((int)$id_passage, $id_jeu, $score_jeu);
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'redirect' => BASE_URL . '/candidat?page=finish&id_passage=' . $id_passage
+    ]);
     exit;
 }
 
@@ -113,15 +177,14 @@ function candidat_afficher_finish()
     require_once ROOT . '/app/models/resultat.php';
 
     $id_passage = $_GET['id_passage'] ?? null;
-    if (!$id_passage) {
-        die("Passage introuvable.");
-    }
+    if (!$id_passage) die("Passage introuvable.");
 
     $user     = trouver_candidat_par_id($_SESSION['id_candidat']);
     $passage  = passage_test_par_id($id_passage);
     $resultat = resultat_par_passage($id_passage);
 
     afficher_vue('candidat/pageCandidat', [
+        'page'     => 'finish',
         'user'     => $user,
         'passage'  => $passage,
         'resultat' => $resultat,
@@ -135,44 +198,37 @@ function candidat_expire_test()
     require_once ROOT . '/app/models/passageTest.php';
     require_once ROOT . '/app/models/resultat.php';
 
-    $data = json_decode(file_get_contents("php://input"), true);
+    $data = json_decode(file_get_contents('php://input'), true);
 
-    $id_passage = $data["id_passage"] ?? null;
-    $id_test    = $data["id_test"]    ?? null;
+    $id_passage = $data['id_passage'] ?? null;
+    $id_test    = $data['id_test']    ?? null;
 
     if (!$id_passage || !$id_test) {
         http_response_code(400);
-        exit("Requête invalide.");
+        exit('Requête invalide.');
     }
 
     passage_test_expire($id_passage);
-    creer_resultat($id_passage, 0);
 
-    echo "OK";
+    $existant = resultat_par_passage($id_passage);
+    if (!$existant) creer_resultat($id_passage, 0);
+
+    http_response_code(200);
+    echo 'OK';
     exit;
 }
 
-
-// GET /profile — Affiche le profil
 function page_profil()
 {
     verifier_candidat();
-
     $user    = trouver_candidat_par_id($_SESSION['id_candidat']);
     $errors  = $_SESSION['profile_errors']  ?? [];
     $success = $_SESSION['profile_success'] ?? '';
     $form    = $_SESSION['profile_form']    ?? $user;
     unset($_SESSION['profile_errors'], $_SESSION['profile_success'], $_SESSION['profile_form']);
-
-    afficher_vue('candidat/profile', [
-        'user'    => $user,
-        'errors'  => $errors,
-        'success' => $success,
-        'form'    => $form,
-    ]);
+    afficher_vue('candidat/profile', compact('user', 'errors', 'success', 'form'));
 }
 
-// POST /profile — Enregistre les modifications du profil
 function modifier_profil()
 {
     verifier_candidat();
@@ -184,13 +240,11 @@ function modifier_profil()
     $nom    = trim($_POST['nom']    ?? '');
     $email  = trim($_POST['email']  ?? '');
     $userId = $_SESSION['id_candidat'];
-
     $errors = [];
 
     if ($prenom === '') $errors['prenom'] = 'Le prénom est obligatoire.';
     if ($nom    === '') $errors['nom']    = 'Le nom est obligatoire.';
-
-    if ($email === '') {
+    if ($email  === '') {
         $errors['email'] = "L'e-mail est obligatoire.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] = 'Adresse e-mail invalide.';
@@ -205,7 +259,7 @@ function modifier_profil()
             exit;
         }
         $_SESSION['profile_errors'] = $errors;
-        $_SESSION['profile_form']   = ['prenom' => $prenom, 'nom' => $nom, 'email' => $email];
+        $_SESSION['profile_form']   = compact('prenom', 'nom', 'email');
         header('Location: ' . BASE_URL . '/profile');
         exit;
     }
@@ -214,10 +268,7 @@ function modifier_profil()
 
     if ($isAjax) {
         header('Content-Type: application/json');
-        echo json_encode([
-            'success'     => true,
-            'nom_complet' => trim("$prenom $nom"),
-        ]);
+        echo json_encode(['success' => true, 'nom_complet' => trim("$prenom $nom")]);
         exit;
     }
 

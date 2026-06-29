@@ -1,35 +1,16 @@
 <?php
 
-$page = $_GET['page'] ?? 'exercices';
-
-if ($page === 'creer_exercice_traitement') {
-    require_once ROOT . '/app/controllers/jeux_controller.php';
-    traiter_creation_jeux();
-    exit;
-}
-
-if ($page === 'creer_test_traitement') {
-    require_once ROOT . '/app/controllers/test_controller.php';
-    traiter_creation_test();
-    exit;
-}
-
-
-// GET /admin/login — Affiche la page de connexion admin
 function page_connexion_admin()
 {
     if (isset($_SESSION['id_admin'])) {
         header('Location: ' . BASE_URL . '/admin');
         exit;
     }
-
     $error = $_SESSION['admin_error'] ?? '';
     unset($_SESSION['admin_error']);
-
     afficher_vue('admin/login', ['error' => $error]);
 }
 
-// POST /admin/login — Traite la connexion admin
 function traiter_connexion_admin()
 {
     $email      = trim($_POST['email'] ?? '');
@@ -51,7 +32,7 @@ function traiter_connexion_admin()
 
     session_regenerate_id(true);
     $_SESSION['id_admin']   = $adminUser['id_admin'];
-    $_SESSION['admin_role'] = $adminUser['role']; // super_admin, admin, moderateur
+    $_SESSION['admin_role'] = $adminUser['role'];
 
     header('Location: ' . BASE_URL . '/admin');
     exit;
@@ -64,82 +45,100 @@ function tableau_de_bord()
     $page     = $_GET['page'] ?? 'exercices';
     $id_admin = $_SESSION['id_admin'];
 
-    // Récupération des exercices et tests depuis la BDD
     $exercices = lister_jeux_admin($id_admin);
     $tests     = lister_test_admin($id_admin);
 
-    // Exercice sélectionné
     $exercice_selectionne = null;
     if (isset($_GET['exercice_id'])) {
         $id_cible = (int) $_GET['exercice_id'];
         foreach ($exercices as $ex) {
-            if ($ex['id_jeux'] === $id_cible) {
-                $exercice_selectionne = $ex;
-                break;
-            }
+            if ((int)$ex['id_jeux'] === $id_cible) { $exercice_selectionne = $ex; break; }
         }
     }
 
-    // Test sélectionné
     $test_selectionne = null;
     if (isset($_GET['test_id'])) {
         $id_cible = (int) $_GET['test_id'];
         foreach ($tests as $t) {
-            if ($t['id_test'] === $id_cible) {
-                $test_selectionne = $t;
-                break;
-            }
+            if ((int)$t['id_test'] === $id_cible) { $test_selectionne = $t; break; }
         }
     }
 
-    if ($page === 'creer_exercice') {
-
-        require_once ROOT . '/app/models/jeux.php';
-
-        $types       = jeux_recuperer_types();
-        $difficultes = jeux_recuperer_difficultes();
-
-        afficher_vue('admin/dashboard', [
-            'page'                 => $page,
-            'exercices'            => $exercices,
-            'tests'                => $tests,
-            'exercice_selectionne' => $exercice_selectionne,
-            'test_selectionne'     => $test_selectionne,
-            'types'                => $types,
-            'difficultes'          => $difficultes,
-        ]);
-
-        return;
-    }
-
-    if ($page === 'creer_test') {
-
-        require_once ROOT . '/app/models/jeux.php';
-        require_once ROOT . '/app/models/candidat.php';
-
-        $jeux      = jeux_tous_actifs();
-        $candidats = candidats_tous_actifs();
-
-        afficher_vue('admin/dashboard', [
-            'page'                 => $page,
-            'exercices'            => $exercices,
-            'tests'                => $tests,
-            'exercice_selectionne' => $exercice_selectionne,
-            'test_selectionne'     => $test_selectionne,
-            'jeux'                 => $jeux,
-            'candidats'            => $candidats,
-        ]);
-
-        return;
-    }
-
-    afficher_vue('admin/dashboard', [
+    $base = [
         'page'                 => $page,
         'exercices'            => $exercices,
         'tests'                => $tests,
         'exercice_selectionne' => $exercice_selectionne,
         'test_selectionne'     => $test_selectionne,
-    ]);
+    ];
+
+    if ($page === 'creer_exercice') {
+        require_once ROOT . '/app/models/jeux.php';
+        afficher_vue('admin/dashboard', $base + [
+            'types'       => jeux_recuperer_types(),
+            'difficultes' => jeux_recuperer_difficultes(),
+        ]);
+        return;
+    }
+
+    if ($page === 'creer_test') {
+        require_once ROOT . '/app/models/jeux.php';
+        require_once ROOT . '/app/models/candidat.php';
+        afficher_vue('admin/dashboard', $base + [
+            'jeux'      => jeux_tous_actifs(),
+            'candidats' => candidats_tous_actifs(),
+        ]);
+        return;
+    }
+
+    if ($page === 'statistiques') {
+        require_once ROOT . '/app/models/stats.php';
+        afficher_vue('admin/dashboard', $base + [
+            'stats_globales' => stats_admin_global([]),
+            'stats_tests'    => stats_admin_comparaison([]),
+        ]);
+        return;
+    }
+
+    if ($page === 'etudiants') {
+        require_once ROOT . '/app/models/resultat.php';
+        afficher_vue('admin/dashboard', $base + [
+            'candidats_liste' => resultats_candidats_liste(),
+        ]);
+        return;
+    }
+
+    afficher_vue('admin/dashboard', $base);
+}
+
+function admin_decision_candidat()
+{
+    verifier_admin();
+    require_once ROOT . '/app/models/resultat.php';
+    require_once ROOT . '/app/models/passageTest.php';
+    require_once ROOT . '/app/helpers/mailer.php';
+
+    $id_passage = (int)($_POST['id_passage_test'] ?? 0);
+    $decision   = $_POST['decision'] ?? '';
+    $valides    = ['admis', 'refuse', 'liste_attente', 'en_attente'];
+
+    if ($id_passage && in_array($decision, $valides)) {
+        resultat_mettre_a_jour_decision($id_passage, $decision);
+
+        $infos = passage_candidat_et_test($id_passage);
+        if ($infos) {
+            envoyer_decision(
+                $infos['email'],
+                $infos['prenom'],
+                $infos['nom'],
+                $infos['titre_test'],
+                $decision
+            );
+        }
+    }
+
+    header('Location: ' . BASE_URL . '/admin?page=etudiants');
+    exit;
 }
 
 function deconnecter_admin()
@@ -148,4 +147,3 @@ function deconnecter_admin()
     header('Location: ' . BASE_URL . '/admin/login');
     exit;
 }
-

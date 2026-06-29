@@ -1,97 +1,87 @@
 <?php
 
-// ROUTAGE DIRECT SI APPELÉ PAR LE ROUTEUR
-if (isset($_GET['action']) && $_GET['action'] === 'creer') {
-    traiter_creation_jeux();
-    exit;
-}
-
-
 function traiter_creation_jeux()
 {
     verifier_admin();
 
-    // Champs du jeu
-    $titre       = trim($_POST['titre']);
-    $description = trim($_POST['description']);
-    $bareme      = intval($_POST['bareme']);
-    $difficulte  = $_POST['difficulte'];
-    $type        = $_POST['categorie'];
-    $duree       = intval($_POST['duree']);
-    $statut      = $_POST['statut'];
+    require_once ROOT . '/app/models/jeux.php';
 
-    // QUESTIONS
-    $questions_form = $_POST['questions'] ?? [];
-    $questions_json = [];
+    $titre        = trim($_POST['titre']       ?? '');
+    $bareme       = max(1, intval($_POST['bareme'] ?? 1));
+    $difficulte   = $_POST['difficulte']       ?? 'moyen';
+    $type         = $_POST['categorie']        ?? 'autre';
+    $statut       = $_POST['statut']           ?? 'brouillon';
+    $contenu_html = trim($_POST['contenu_html'] ?? '');
 
-    // Dossier upload
-    $uploadDir = ROOT . "/public/uploads/";
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0777, true);
+    if ($titre === '' || $contenu_html === '') {
+        header('Location: ' . BASE_URL . '/admin?page=creer_exercice&error=champs_manquants');
+        exit;
     }
-
-    foreach ($questions_form as $qIndex => $q) {
-
-        $intitule = trim($q['intitule']);
-        $points   = intval($q['points']);
-        $intrus   = intval($q['intrus']);
-
-        $propositions = [];
-
-        foreach ($q['propositions'] as $pIndex => $prop) {
-
-            $label = trim($prop['label']);
-
-            $imagePath = null;
-
-            if (isset($_FILES['questions']['name'][$qIndex]['propositions'][$pIndex]['image']) &&
-                $_FILES['questions']['error'][$qIndex]['propositions'][$pIndex]['image'] === UPLOAD_ERR_OK) {
-
-                $tmpName = $_FILES['questions']['tmp_name'][$qIndex]['propositions'][$pIndex]['image'];
-                $originalName = $_FILES['questions']['name'][$qIndex]['propositions'][$pIndex]['image'];
-
-                $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-                $newName = "jeu_" . time() . "_q{$qIndex}_p{$pIndex}." . $ext;
-
-                $imagePath = "uploads/" . $newName;
-
-                move_uploaded_file($tmpName, $uploadDir . $newName);
-            }
-
-            $typeProp = $imagePath ? "image" : "texte";
-
-            $propositions[] = [
-                "type" => $typeProp,
-                "label" => $label,
-                "src" => $imagePath
-            ];
-        }
-
-        $questions_json[] = [
-            "intitule"      => $intitule,
-            "propositions"  => $propositions,
-            "intrus_index"  => $intrus,
-            "points"        => $points
-        ];
-    }
-
-    $contenu_json = json_encode([
-        "description" => $description,
-        "duree"       => $duree,
-        "nbquestions" => count($questions_json),
-        "questions"   => $questions_json
-    ], JSON_UNESCAPED_UNICODE);
 
     $id_admin = $_SESSION['id_admin'];
-
-    require_once ROOT . '/app/models/jeux.php';
-    $ok = jeux_inserer($titre, $type, $difficulte, $bareme, $contenu_json, $statut, $id_admin);
+    $ok = jeux_inserer_html($titre, $type, $difficulte, $bareme, $statut, $contenu_html, $id_admin);
 
     if ($ok) {
-        header("Location: " . BASE_URL . "/admin?page=exercices&success=1");
-        exit;
+        header('Location: ' . BASE_URL . '/admin?page=exercices&success=1');
     } else {
-        header("Location: " . BASE_URL . "/admin?page=creer_exercice&error=1");
+        header('Location: ' . BASE_URL . '/admin?page=creer_exercice&error=1');
+    }
+    exit;
+}
+
+function page_modifier_jeux()
+{
+    verifier_admin();
+    require_once ROOT . '/app/models/jeux.php';
+    require_once ROOT . '/app/models/admin.php';
+
+    $id  = (int)($_GET['id'] ?? 0);
+    $jeu = $id ? jeux_par_id($id) : null;
+    if (!$jeu) { header('Location: ' . BASE_URL . '/admin?page=exercices'); exit; }
+
+    $id_admin  = $_SESSION['id_admin'];
+    afficher_vue('admin/dashboard', [
+        'page'                 => 'modifier_exercice',
+        'exercices'            => lister_jeux_admin($id_admin),
+        'tests'                => lister_test_admin($id_admin),
+        'exercice_selectionne' => null,
+        'test_selectionne'     => null,
+        'jeu'                  => $jeu,
+        'types'                => jeux_recuperer_types(),
+        'difficultes'          => jeux_recuperer_difficultes(),
+    ]);
+}
+
+function traiter_modification_jeux()
+{
+    verifier_admin();
+    require_once ROOT . '/app/models/jeux.php';
+
+    $id           = (int)($_POST['id_jeux']      ?? 0);
+    $titre        = trim($_POST['titre']          ?? '');
+    $type         = $_POST['categorie']           ?? 'autre';
+    $difficulte   = $_POST['difficulte']          ?? 'moyen';
+    $bareme       = max(1, intval($_POST['bareme'] ?? 1));
+    $statut       = $_POST['statut']              ?? 'brouillon';
+    $contenu_html = trim($_POST['contenu_html']   ?? '');
+
+    if (!$id || $titre === '' || $contenu_html === '') {
+        header('Location: ' . BASE_URL . '/admin/jeux/modifier?id=' . $id . '&error=champs_manquants');
         exit;
     }
+
+    jeux_mettre_a_jour($id, $titre, $type, $difficulte, $bareme, $statut, $contenu_html);
+    header('Location: ' . BASE_URL . '/admin?page=exercices&success=modifie');
+    exit;
+}
+
+function traiter_suppression_jeux()
+{
+    verifier_admin();
+    require_once ROOT . '/app/models/jeux.php';
+
+    $id = (int)($_POST['id_jeux'] ?? 0);
+    if ($id) jeux_supprimer($id);
+    header('Location: ' . BASE_URL . '/admin?page=exercices&success=supprime');
+    exit;
 }
