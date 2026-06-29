@@ -17,6 +17,7 @@
     <form id="profile-form" action="<?= BASE_URL ?>/profile" method="post" novalidate>
 
         <label for="prenom">Prénom</label>
+
         <input type="text" id="prenom" name="prenom" value="<?= htmlspecialchars($form['prenom'] ?? '') ?>">
         <span class="error" id="err-prenom"><?= htmlspecialchars($errors['prenom'] ?? '') ?></span>
 
@@ -26,6 +27,7 @@
 
         <label for="email">E-mail</label>
         <input type="email" id="email" name="email" value="<?= htmlspecialchars($form['email'] ?? '') ?>">
+
         <span class="error" id="err-email"><?= htmlspecialchars($errors['email'] ?? '') ?></span>
 
         <button type="submit">Enregistrer</button>
