@@ -416,7 +416,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
     <div class="form-group">
         <label for="contenu_html">Code HTML du jeu</label>
         <p style="font-size:12px;color:#00a2ff;margin-bottom:8px;">
-            Le jeu doit appeler <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">CodeWarden.submit(score)</code> quand le joueur termine.
+            Le jeu doit appeler <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">CodeWarden.submit(Math.round(nbCorrect / totalQuestions * 100));</code> quand le joueur termine.
         </p>
         <textarea name="contenu_html" id="contenu_html" rows="18" required
                   placeholder="Collez ici le fichier HTML complet fourni par le développeur..."
