@@ -3,7 +3,7 @@
 require_once ROOT . '/vendor/phpmailer/src/Exception.php';
 require_once ROOT . '/vendor/phpmailer/src/PHPMailer.php';
 require_once ROOT . '/vendor/phpmailer/src/SMTP.php';
-require_once ROOT . '/app/config/mail.php';
+require_once ROOT . '/config/mail.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
