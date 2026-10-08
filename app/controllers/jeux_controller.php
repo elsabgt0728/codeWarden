@@ -3,6 +3,7 @@
 function traiter_creation_jeux()
 {
     verifier_admin();
+    verifier_csrf();
 
     require_once ROOT . '/app/models/jeux.php';
 
@@ -55,6 +56,8 @@ function page_modifier_jeux()
 function traiter_modification_jeux()
 {
     verifier_admin();
+    verifier_csrf();
+
     require_once ROOT . '/app/models/jeux.php';
 
     $id           = (int)($_POST['id_jeux']      ?? 0);
@@ -78,6 +81,8 @@ function traiter_modification_jeux()
 function traiter_suppression_jeux()
 {
     verifier_admin();
+    verifier_csrf();
+
     require_once ROOT . '/app/models/jeux.php';
 
     $id = (int)($_POST['id_jeux'] ?? 0);

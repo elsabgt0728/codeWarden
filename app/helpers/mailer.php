@@ -9,6 +9,10 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+// Pause (en millisecondes) entre deux envois d'un même lot, pour ne pas
+// déclencher le throttling anti-spam du serveur SMTP (Gmail notamment).
+const MAILER_DELAI_LOT_MS = 200;
+
 function envoyer_decision($candidat_email, $candidat_prenom, $candidat_nom, $titre_test, $decision)
 {
     $labels = [
@@ -20,18 +24,10 @@ function envoyer_decision($candidat_email, $candidat_prenom, $candidat_nom, $tit
 
     $info = $labels[$decision] ?? $labels['en_attente'];
 
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = MAIL_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = MAIL_USERNAME;
-        $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = MAIL_PORT;
-        $mail->CharSet    = 'UTF-8';
+    $mail = _mailer_ouvrir_connexion();
+    $mail->SMTPKeepAlive = false; // envoi isolé : pas besoin de garder la connexion ouverte
 
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
+    try {
         $mail->addAddress($candidat_email, trim($candidat_prenom . ' ' . $candidat_nom));
 
         $mail->isHTML(true);
@@ -98,33 +94,46 @@ function envoyer_decision($candidat_email, $candidat_prenom, $candidat_nom, $tit
         $mail->AltBody = "Bonjour $candidat_prenom,\n\nRésultat de votre candidature pour le test \"$titre_test\" : {$info['label']}.\n\n{$info['message']}\n\nCodeWarden";
 
         $mail->send();
+        $mail->smtpClose();
         return true;
     } catch (Exception $e) {
         error_log('[CodeWarden] Mailer decision error — Message: ' . $e->getMessage() . ' | SMTP: ' . $mail->ErrorInfo . ' | To: ' . $candidat_email);
+        $mail->smtpClose();
         return false;
     }
 }
 
-function envoyer_convocation($candidat_email, $candidat_prenom, $candidat_nom, $titre_test, $duree_minutes, $lien_test, $date_expiration = null)
+// ----------------------------------------------------------------------
+// Convocations — connexion SMTP réutilisable pour l'envoi en lot
+// ----------------------------------------------------------------------
+
+/**
+ * Ouvre et configure une connexion SMTP, prête à envoyer (From déjà fixé).
+ * Le SMTPKeepAlive est activé par défaut : à utiliser pour plusieurs envois
+ * successifs sur la même connexion. L'appelant doit fermer la connexion
+ * avec $mail->smtpClose() une fois terminé.
+ */
+function _mailer_ouvrir_connexion(): PHPMailer
 {
     $mail = new PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host          = MAIL_HOST;
+    $mail->SMTPAuth      = true;
+    $mail->Username      = MAIL_USERNAME;
+    $mail->Password      = MAIL_PASSWORD;
+    $mail->SMTPSecure    = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port          = MAIL_PORT;
+    $mail->CharSet       = 'UTF-8';
+    $mail->SMTPKeepAlive = true;
 
-    try {
-        $mail->isSMTP();
-        $mail->Host       = MAIL_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = MAIL_USERNAME;
-        $mail->Password   = MAIL_PASSWORD;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = MAIL_PORT;
-        $mail->CharSet    = 'UTF-8';
+    $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
 
-        $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
-        $mail->addAddress($candidat_email, trim($candidat_prenom . ' ' . $candidat_nom));
+    return $mail;
+}
 
-        $mail->isHTML(true);
-        $mail->Subject = 'Convocation – Test d\'admission CodeWarden';
-        $mail->Body    = '
+function _mailer_corps_convocation($candidat_prenom, $titre_test, $duree_minutes, $lien_test, $date_expiration = null): array
+{
+    $html = '
 <!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"></head>
@@ -203,13 +212,96 @@ function envoyer_convocation($candidat_email, $candidat_prenom, $candidat_nom, $
 </body>
 </html>';
 
-        $mail->AltBody = "Bonjour $candidat_prenom,\n\nVous êtes convoqué(e) pour le test : $titre_test (durée : {$duree_minutes} min).\n\nAccédez au test ici : $lien_test\n\nCodeWarden";
+    $alt = "Bonjour $candidat_prenom,\n\nVous êtes convoqué(e) pour le test : $titre_test (durée : {$duree_minutes} min).\n\nAccédez au test ici : $lien_test\n\nCodeWarden";
+
+    return [$html, $alt];
+}
+
+/**
+ * Envoie une convocation à un seul candidat sur une connexion déjà ouverte.
+ * Ne ferme PAS la connexion — à la charge de l'appelant (permet de l'appeler
+ * en boucle sur la même connexion SMTP).
+ */
+function _envoyer_convocation_sur_connexion(PHPMailer $mail, $candidat_email, $candidat_prenom, $candidat_nom, $titre_test, $duree_minutes, $lien_test, $date_expiration = null): bool
+{
+    try {
+        $mail->clearAddresses();
+        $mail->clearAttachments();
+        $mail->addAddress($candidat_email, trim($candidat_prenom . ' ' . $candidat_nom));
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Convocation – Test d\'admission CodeWarden';
+        [$mail->Body, $mail->AltBody] = _mailer_corps_convocation($candidat_prenom, $titre_test, $duree_minutes, $lien_test, $date_expiration);
 
         $mail->send();
         return true;
-
     } catch (Exception $e) {
-        error_log('Mailer error: ' . $mail->ErrorInfo);
+        error_log('[CodeWarden] Mailer convocation error — ' . $mail->ErrorInfo . ' | To: ' . $candidat_email);
         return false;
     }
+}
+
+/**
+ * Envoi isolé d'une convocation (ouvre et ferme sa propre connexion).
+ * Conservée pour compatibilité ; préférer envoyer_convocations_lot() pour
+ * plusieurs candidats d'un coup.
+ */
+function envoyer_convocation($candidat_email, $candidat_prenom, $candidat_nom, $titre_test, $duree_minutes, $lien_test, $date_expiration = null)
+{
+    $mail = _mailer_ouvrir_connexion();
+    $mail->SMTPKeepAlive = false;
+    $ok = _envoyer_convocation_sur_connexion($mail, $candidat_email, $candidat_prenom, $candidat_nom, $titre_test, $duree_minutes, $lien_test, $date_expiration);
+    $mail->smtpClose();
+    return $ok;
+}
+
+/**
+ * Envoie les convocations de TOUT un lot de candidats sur UNE SEULE connexion
+ * SMTP (au lieu d'en ouvrir une par candidat). Beaucoup plus rapide et moins
+ * susceptible de déclencher le throttling anti-spam du serveur mail sur de
+ * grosses promotions.
+ *
+ * @param array  $convocations    liste de ['email'=>, 'prenom'=>, 'nom'=>, ...]
+ * @param string $titre_test
+ * @param int    $duree_minutes
+ * @param string $lien_test       lien d'accès (identique pour tous les candidats d'un même test)
+ * @param ?string $date_expiration
+ * @return array ['ok' => [emails envoyés], 'echecs' => [emails en échec]]
+ */
+function envoyer_convocations_lot(array $convocations, $titre_test, $duree_minutes, $lien_test, $date_expiration = null): array
+{
+    $resultat = ['ok' => [], 'echecs' => []];
+
+    if (empty($convocations)) {
+        return $resultat;
+    }
+
+    $mail = _mailer_ouvrir_connexion();
+
+    foreach ($convocations as $conv) {
+        $ok = _envoyer_convocation_sur_connexion(
+            $mail,
+            $conv['email'],
+            $conv['prenom'],
+            $conv['nom'],
+            $titre_test,
+            $duree_minutes,
+            $lien_test,
+            $date_expiration
+        );
+
+        if ($ok) {
+            $resultat['ok'][] = $conv['email'];
+        } else {
+            $resultat['echecs'][] = $conv['email'];
+        }
+
+        if (MAILER_DELAI_LOT_MS > 0) {
+            usleep(MAILER_DELAI_LOT_MS * 1000);
+        }
+    }
+
+    $mail->smtpClose();
+
+    return $resultat;
 }

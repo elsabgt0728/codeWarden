@@ -78,7 +78,12 @@ function stats_candidat(int $id_candidat, array $filtres = []): array
     return compact('passages', 'resume');
 }
 
-function stats_admin_global(array $filtres = []): array
+// Avant : aucune des 3 fonctions ci-dessous n'était filtrée par établissement
+// -> un admin voyait les stats agrégées de TOUTE la plateforme, pas de sa
+// seule école. Ajout d'un paramètre $id_etablissement obligatoire + jointure
+// test -> administrateur pour le vérifier.
+
+function stats_admin_global(array $filtres, $id_etablissement): array
 {
     $db = connecter_bdd();
 
@@ -89,7 +94,10 @@ function stats_admin_global(array $filtres = []): array
         $params[] = (int) $filtres['id_test'];
     }
 
-    $cond = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+    $where[]  = 'a.id_etablissement = ?';
+    $params[] = $id_etablissement;
+
+    $cond = 'WHERE ' . implode(' AND ', $where);
 
     $sql = "
         SELECT
@@ -106,8 +114,10 @@ function stats_admin_global(array $filtres = []): array
                 / NULLIF(COUNT(r.id_resultat), 0) * 100, 1
             )                                                             AS taux_reussite
         FROM passage_test pt
-        LEFT JOIN session  s ON s.id_session      = pt.id_session
-        LEFT JOIN resultat r ON r.id_passage_test = pt.id_passage_test
+        JOIN session        s ON s.id_session      = pt.id_session
+        JOIN test            t ON t.id_test         = s.id_test
+        JOIN administrateur  a ON a.id_admin        = t.id_admin
+        LEFT JOIN resultat   r ON r.id_passage_test = pt.id_passage_test
         $cond
     ";
 
@@ -116,13 +126,15 @@ function stats_admin_global(array $filtres = []): array
     return $stmt->fetch() ?: [];
 }
 
-function stats_admin_epreuve(int $id_test, array $filtres = []): array
+function stats_admin_epreuve(int $id_test, array $filtres, $id_etablissement): array
 {
     $db = connecter_bdd();
 
     [$where, $params] = _stats_filtres_passage($filtres);
     $where[]  = 's.id_test = ?';
     $params[] = $id_test;
+    $where[]  = 'a.id_etablissement = ?';
+    $params[] = $id_etablissement;
 
     $cond = 'WHERE ' . implode(' AND ', $where);
 
@@ -146,9 +158,10 @@ function stats_admin_epreuve(int $id_test, array $filtres = []): array
                 / NULLIF(COUNT(r.id_resultat), 0) * 100, 1
             )                                                             AS taux_reussite
         FROM passage_test pt
-        JOIN   session  s ON s.id_session      = pt.id_session
-        JOIN   test     t ON t.id_test         = s.id_test
-        LEFT JOIN resultat r ON r.id_passage_test = pt.id_passage_test
+        JOIN session        s ON s.id_session      = pt.id_session
+        JOIN test            t ON t.id_test         = s.id_test
+        JOIN administrateur  a ON a.id_admin        = t.id_admin
+        LEFT JOIN resultat   r ON r.id_passage_test = pt.id_passage_test
         $cond
     ";
 
@@ -166,26 +179,30 @@ function stats_admin_epreuve(int $id_test, array $filtres = []): array
             r.decision,
             pt.id_passage_test
         FROM passage_test pt
-        JOIN session   s ON s.id_session      = pt.id_session
-        JOIN candidat  c ON c.id_candidat     = pt.id_candidat
-        JOIN resultat  r ON r.id_passage_test = pt.id_passage_test
-        WHERE s.id_test = ?
+        JOIN session        s ON s.id_session      = pt.id_session
+        JOIN test            t ON t.id_test         = s.id_test
+        JOIN administrateur  a ON a.id_admin        = t.id_admin
+        JOIN candidat         c ON c.id_candidat     = pt.id_candidat
+        JOIN resultat         r ON r.id_passage_test = pt.id_passage_test
+        WHERE s.id_test = ? AND a.id_etablissement = ?
         ORDER BY r.score_global DESC
         LIMIT 50
     ";
     $stmtC = $db->prepare($sqlClass);
-    $stmtC->execute([$id_test]);
+    $stmtC->execute([$id_test, $id_etablissement]);
     $classement = $stmtC->fetchAll();
 
     return compact('resume', 'classement');
 }
 
-function stats_admin_comparaison(array $filtres = []): array
+function stats_admin_comparaison(array $filtres, $id_etablissement): array
 {
     $db = connecter_bdd();
 
     [$where, $params] = _stats_filtres_passage($filtres);
-    $cond = $where ? ('AND ' . implode(' AND ', $where)) : '';
+    $where[]  = 'a.id_etablissement = ?';
+    $params[] = $id_etablissement;
+    $cond     = 'AND ' . implode(' AND ', $where);
 
     $sql = "
         SELECT
@@ -201,6 +218,7 @@ function stats_admin_comparaison(array $filtres = []): array
                 / NULLIF(COUNT(r.id_resultat), 0) * 100, 1
             )                                                             AS taux_reussite
         FROM test t
+        JOIN administrateur    a  ON a.id_admin         = t.id_admin
         LEFT JOIN session      s  ON s.id_test          = t.id_test
         LEFT JOIN passage_test pt ON pt.id_session      = s.id_session
         LEFT JOIN resultat     r  ON r.id_passage_test  = pt.id_passage_test

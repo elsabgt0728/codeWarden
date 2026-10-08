@@ -121,6 +121,7 @@ function candidat_enregistrer_score_jeu()
         exit;
     }
 
+    // Le score est borné [0,100] directement dans enregistrer_score_jeu()
     enregistrer_score_jeu($id_passage, $id_jeu, $score);
 
     header('Content-Type: application/json');
@@ -135,13 +136,10 @@ function candidat_terminer_test()
     require_once ROOT . '/app/models/passageTest.php';
     require_once ROOT . '/app/models/resultat.php';
 
-    // Le jeu HTML envoie un JSON body avec le score directement
     $data = json_decode(file_get_contents('php://input'), true) ?? [];
 
-    $id_passage  = $data['id_passage']  ?? null;
-    $id_test     = $data['id_test']     ?? null;
-    $score       = (float)($data['score'] ?? 0);
-    $scores_jeux = $data['scores_jeux'] ?? [];
+    $id_passage = $data['id_passage'] ?? null;
+    $id_test    = $data['id_test']    ?? null;
 
     if (!$id_passage || !$id_test) {
         http_response_code(400);
@@ -150,17 +148,16 @@ function candidat_terminer_test()
         exit;
     }
 
+    // Sécurité : le score final n'est plus repris du JSON envoyé par le
+    // client (facilement falsifiable via un appel direct à cette route).
+    // On le recalcule côté serveur à partir des scores par jeu déjà
+    // enregistrés en base au fil du test (via /candidat/score-jeu).
+    $score = calculer_score_total_passage((int)$id_passage, (int)$id_test);
+
     terminer_passage_test($id_passage, $score);
 
     $existant = resultat_par_passage($id_passage);
     if (!$existant) creer_resultat($id_passage, $score);
-
-    // Sauvegarder le score de chaque jeu individuel
-    foreach ($scores_jeux as $sg) {
-        $id_jeu     = (int)($sg['id_jeu'] ?? 0);
-        $score_jeu  = (float)($sg['score'] ?? 0);
-        if ($id_jeu > 0) enregistrer_score_jeu((int)$id_passage, $id_jeu, $score_jeu);
-    }
 
     header('Content-Type: application/json');
     echo json_encode([
@@ -232,6 +229,7 @@ function page_profil()
 function modifier_profil()
 {
     verifier_candidat();
+    verifier_csrf();
 
     $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) &&
               strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';

@@ -23,7 +23,6 @@ function api_stats_candidat(int $id): void
 {
     require_once ROOT . '/app/models/stats.php';
 
-    // Un candidat ne peut accéder qu'à ses propres stats ; un admin peut tout voir
     $est_admin    = !empty($_SESSION['id_admin']);
     $est_candidat = !empty($_SESSION['id_candidat']) && (int) $_SESSION['id_candidat'] === $id;
 
@@ -34,6 +33,12 @@ function api_stats_candidat(int $id): void
     $candidat = trouver_candidat_par_id($id);
     if (!$candidat) {
         _api_json(['erreur' => 'Candidat introuvable'], 404);
+    }
+
+    // Un admin ne peut consulter que les candidats de son propre établissement
+    // (avant : un admin pouvait consulter n'importe quel candidat de la plateforme)
+    if ($est_admin && (int)$candidat['id_etablissement'] !== (int)$_SESSION['id_etablissement']) {
+        _api_json(['erreur' => 'Non autorisé'], 403);
     }
 
     $data = stats_candidat($id, _api_filtres());
@@ -59,7 +64,7 @@ function api_stats_admin_global(): void
 
     require_once ROOT . '/app/models/stats.php';
 
-    $data = stats_admin_global(_api_filtres());
+    $data = stats_admin_global(_api_filtres(), $_SESSION['id_etablissement']);
     _api_json($data);
 }
 
@@ -72,7 +77,7 @@ function api_stats_admin_epreuve(int $id): void
 
     require_once ROOT . '/app/models/stats.php';
 
-    $data = stats_admin_epreuve($id, _api_filtres());
+    $data = stats_admin_epreuve($id, _api_filtres(), $_SESSION['id_etablissement']);
     _api_json($data);
 }
 
@@ -85,6 +90,6 @@ function api_stats_admin_comparaison(): void
 
     require_once ROOT . '/app/models/stats.php';
 
-    $tests = stats_admin_comparaison(_api_filtres());
+    $tests = stats_admin_comparaison(_api_filtres(), $_SESSION['id_etablissement']);
     _api_json(['tests' => $tests]);
 }

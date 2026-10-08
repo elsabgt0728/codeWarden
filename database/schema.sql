@@ -61,6 +61,7 @@ CREATE TABLE ADMINISTRATEUR (
 CREATE TABLE JEUX (
      id_jeux INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
         titre VARCHAR(255) NOT NULL,
+        description TEXT NULL,
         duree INT,
         type ENUM(
             'qcm',
@@ -92,7 +93,7 @@ CREATE TABLE JEUX (
 CREATE TABLE TEST (
     id_test INT PRIMARY KEY AUTO_INCREMENT,
     titre VARCHAR(255) NOT NULL,
-    duree INT NOT NULL DEFAULT 0,
+    duree_minutes INT NOT NULL DEFAULT 0,
     description TEXT,
 
     ordre_aleatoire BOOLEAN NOT NULL DEFAULT FALSE,
@@ -135,18 +136,10 @@ CREATE TABLE CANDIDAT (
 
     id_etablissement INT NULL,
 
-    -- RELATION TEST (1 test maximum par candidat)
-    id_test INT,
-
     FOREIGN KEY (id_etablissement)
     REFERENCES ETABLISSEMENT(id_etablissement)
     ON UPDATE CASCADE
-    ON DELETE RESTRICT,
-
-    FOREIGN KEY (id_test)
-    REFERENCES TEST(id_test)
-    ON UPDATE CASCADE
-    ON DELETE SET NULL
+    ON DELETE RESTRICT
 );
 
 -- TABLE : CANDIDAT_GROUPE

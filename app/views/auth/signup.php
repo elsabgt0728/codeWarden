@@ -15,6 +15,7 @@
     <?php endif; ?>
 
     <form id="signup-form" action="<?= BASE_URL ?>/signup" method="post" novalidate>
+        <?= csrf_champ() ?>
 
         <label for="prenom">Prénom</label>
         <input type="text" id="prenom" name="prenom" value="<?= htmlspecialchars($form['prenom'] ?? '') ?>">

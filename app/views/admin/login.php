@@ -15,6 +15,7 @@
     <?php endif; ?>
 
     <form action="<?= BASE_URL ?>/admin/login" method="post" novalidate>
+        <?= csrf_champ() ?>
 
         <label for="email">E-mail</label>
         <input type="email" id="email" name="email" autocomplete="email">

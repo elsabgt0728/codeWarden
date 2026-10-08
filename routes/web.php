@@ -47,6 +47,12 @@ $routes = [
 
     // Décision candidat (admin)
     'POST /admin/candidat/decision' => 'admin_decision_candidat',
+
+    // Groupes (admin)
+    'POST /admin/groupe/creer'            => 'traiter_creation_groupe',
+    'POST /admin/groupe/supprimer'        => 'traiter_suppression_groupe',
+    'POST /admin/groupe/candidat/ajouter' => 'traiter_ajout_candidat_groupe',
+    'POST /admin/groupe/candidat/retirer' => 'traiter_retrait_candidat_groupe',
 ];
 
 if (isset($routes[$cle])) {

@@ -1,2 +1,2 @@
-db_connect.php
+app/config/config.php
 app/config/mail.php

@@ -77,19 +77,6 @@ function test_mettre_a_jour_jeux($id_test, array $jeux_ids)
     }
 }
 
-function test_mettre_a_jour_candidats($id_session, array $candidats_ids, $base_url)
-{
-    $db = connecter_bdd();
-    // Supprimer les convocations existantes pour cette session
-    $db->prepare("DELETE FROM convocation WHERE id_session = ?")->execute([$id_session]);
-    // Re-créer les nouvelles convocations
-    $stmt = $db->prepare("INSERT INTO convocation (lien_acces, date_expiration, id_candidat, id_session) VALUES (?, NULL, ?, ?)");
-    foreach ($candidats_ids as $id_candidat) {
-        $lien = $base_url . '/candidat/commencer?id_test=' . $_GET['id'] ?? 0;
-        $stmt->execute([$lien, (int)$id_candidat, $id_session]);
-    }
-}
-
 function test_recuperer_jeux($id_test) {
     $db = connecter_bdd();
     $stmt = $db->prepare("

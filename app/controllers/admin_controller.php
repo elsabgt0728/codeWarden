@@ -13,6 +13,8 @@ function page_connexion_admin()
 
 function traiter_connexion_admin()
 {
+    verifier_csrf();
+
     $email      = trim($_POST['email'] ?? '');
     $motDePasse = $_POST['password'] ?? '';
 
@@ -31,8 +33,11 @@ function traiter_connexion_admin()
     }
 
     session_regenerate_id(true);
-    $_SESSION['id_admin']   = $adminUser['id_admin'];
-    $_SESSION['admin_role'] = $adminUser['role'];
+    $_SESSION['id_admin']         = $adminUser['id_admin'];
+    $_SESSION['admin_role']       = $adminUser['role'];
+    // Nécessaire pour cloisonner toutes les requêtes admin (candidats, jeux,
+    // stats, résultats, groupes) à son propre établissement.
+    $_SESSION['id_etablissement'] = $adminUser['id_etablissement'];
 
     header('Location: ' . BASE_URL . '/admin');
     exit;
@@ -42,8 +47,9 @@ function tableau_de_bord()
 {
     verifier_admin();
 
-    $page     = $_GET['page'] ?? 'exercices';
-    $id_admin = $_SESSION['id_admin'];
+    $page             = $_GET['page'] ?? 'exercices';
+    $id_admin         = $_SESSION['id_admin'];
+    $id_etablissement = $_SESSION['id_etablissement'];
 
     $exercices = lister_jeux_admin($id_admin);
     $tests     = lister_test_admin($id_admin);
@@ -94,9 +100,11 @@ function tableau_de_bord()
     if ($page === 'creer_test') {
         require_once ROOT . '/app/models/jeux.php';
         require_once ROOT . '/app/models/candidat.php';
+        require_once ROOT . '/app/models/groupe.php';
         afficher_vue('admin/dashboard', $base + [
-            'jeux'      => jeux_tous_actifs(),
-            'candidats' => candidats_tous_actifs(),
+            'jeux'      => jeux_tous_actifs($id_etablissement),
+            'candidats' => candidats_tous_actifs($id_etablissement),
+            'groupes'   => lister_groupes_etablissement($id_etablissement),
         ]);
         return;
     }
@@ -104,8 +112,8 @@ function tableau_de_bord()
     if ($page === 'statistiques') {
         require_once ROOT . '/app/models/stats.php';
         afficher_vue('admin/dashboard', $base + [
-            'stats_globales' => stats_admin_global([]),
-            'stats_tests'    => stats_admin_comparaison([]),
+            'stats_globales' => stats_admin_global([], $id_etablissement),
+            'stats_tests'    => stats_admin_comparaison([], $id_etablissement),
         ]);
         return;
     }
@@ -113,7 +121,39 @@ function tableau_de_bord()
     if ($page === 'etudiants') {
         require_once ROOT . '/app/models/resultat.php';
         afficher_vue('admin/dashboard', $base + [
-            'candidats_liste' => resultats_candidats_liste(),
+            'candidats_liste' => resultats_candidats_liste($id_etablissement),
+        ]);
+        return;
+    }
+
+    if ($page === 'groupes') {
+        require_once ROOT . '/app/models/groupe.php';
+        require_once ROOT . '/app/models/candidat.php';
+
+        $groupes = lister_groupes_etablissement($id_etablissement);
+
+        // Détail d'un groupe sélectionné (?groupe_id=X) : ses membres + les
+        // candidats actifs de l'établissement qui n'en font pas encore partie
+        $groupe_selectionne    = null;
+        $membres_groupe        = [];
+        $candidats_disponibles = [];
+        if (isset($_GET['groupe_id'])) {
+            $groupe_selectionne = groupe_par_id((int)$_GET['groupe_id'], $id_etablissement);
+            if ($groupe_selectionne) {
+                $membres_groupe = groupe_candidats($groupe_selectionne['id_groupe']);
+                $ids_membres    = array_column($membres_groupe, 'id_candidat');
+                $candidats_disponibles = array_values(array_filter(
+                    candidats_tous_actifs($id_etablissement),
+                    fn($c) => !in_array((int)$c['id_candidat'], $ids_membres)
+                ));
+            }
+        }
+
+        afficher_vue('admin/dashboard', $base + [
+            'groupes'               => $groupes,
+            'groupe_selectionne'    => $groupe_selectionne,
+            'membres_groupe'        => $membres_groupe,
+            'candidats_disponibles' => $candidats_disponibles,
         ]);
         return;
     }
@@ -124,6 +164,7 @@ function tableau_de_bord()
 function admin_decision_candidat()
 {
     verifier_admin();
+    verifier_csrf();
     require_once ROOT . '/app/models/resultat.php';
     require_once ROOT . '/app/models/passageTest.php';
     require_once ROOT . '/app/helpers/mailer.php';

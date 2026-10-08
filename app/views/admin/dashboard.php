@@ -16,6 +16,7 @@
         </div>
         <div class="header-logo">CodeWarden</div>
         <div class="nav-group">
+            <a class="navbar-link <?= $page === 'groupes'      ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=groupes"<?= $page === 'groupes' ? ' aria-current="page"' : '' ?>>Groupes</a>
             <a class="navbar-link <?= $page === 'etudiants'    ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=etudiants"<?= $page === 'etudiants' ? ' aria-current="page"' : '' ?>>Étudiants</a>
             <a class="navbar-link <?= $page === 'statistiques' ? 'active' : '' ?>" href="<?= BASE_URL ?>/admin?page=statistiques"<?= $page === 'statistiques' ? ' aria-current="page"' : '' ?>>Statistiques</a>
             <a class="navbar-link" href="<?= BASE_URL ?>/admin/logout">Déconnexion</a>
@@ -32,6 +33,9 @@ if ($ok === 'convoque')       { $toast_msg = 'Convocations envoyées avec succè
 elseif ($ok === 'modifie')    { $toast_msg = 'Test modifié avec succès.'; }
 elseif ($ok === 'supprime')   { $toast_msg = 'Test supprimé.'; }
 elseif ($ok === '1')          { $toast_msg = 'Enregistré avec succès.'; }
+elseif ($ok === 'cree')       { $toast_msg = 'Groupe créé avec succès.'; }
+elseif ($err === 'nom_manquant')   { $toast_msg = 'Le nom du groupe est obligatoire.'; $toast_type = 'error'; }
+elseif ($err === 'aucun_jeu')      { $toast_msg = 'Sélectionnez au moins un exercice pour créer le test.'; $toast_type = 'warning'; }
 elseif ($err === 'deja_convoque')  { $toast_msg = 'Ce test a déjà été convoqué. Les mails ont bien été envoyés précédemment.'; $toast_type = 'error'; }
 elseif ($err === 'aucun_candidat') { $toast_msg = 'Aucun candidat assigné à ce test. Ajoutez des candidats avant de convoquer.'; $toast_type = 'warning'; }
 elseif (isset($_GET['mail_error']))   { $toast_msg = "L'e-mail de décision n'a pas pu être envoyé. Consultez les logs XAMPP pour le détail."; $toast_type = 'error'; }
@@ -110,6 +114,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
                 <div class="detail-actions">
                     <a href="<?= BASE_URL ?>/admin/jeux/modifier?id=<?= $exercice_selectionne['id_jeux'] ?>" class="btn-action btn-edit">Modifier</a>
                     <form method="POST" action="<?= BASE_URL ?>/admin/jeux/supprimer" onsubmit="return confirm('Supprimer cet exercice ?')" style="display:inline">
+                <?= csrf_champ() ?>
                         <input type="hidden" name="id_jeux" value="<?= $exercice_selectionne['id_jeux'] ?>">
                         <button type="submit" class="btn-action btn-delete">Supprimer</button>
                     </form>
@@ -135,6 +140,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
                     <td style="display:flex;gap:8px;flex-wrap:wrap;">
                         <a href="<?= BASE_URL ?>/admin/jeux/modifier?id=<?= $ex['id_jeux'] ?>" class="btn-action btn-edit">Modifier</a>
                         <form method="POST" action="<?= BASE_URL ?>/admin/jeux/supprimer" onsubmit="return confirm('Supprimer cet exercice ?')">
+                <?= csrf_champ() ?>
                             <input type="hidden" name="id_jeux" value="<?= $ex['id_jeux'] ?>">
                             <button type="submit" class="btn-action btn-delete">Supprimer</button>
                         </form>
@@ -194,6 +200,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
                     <?php else: ?>
                         <form method="POST" action="<?= BASE_URL ?>/admin/test/convoquer" style="display:inline"
                               onsubmit="return confirm('Envoyer les convocations par mail à tous les candidats de ce test ?')">
+                <?= csrf_champ() ?>
                             <input type="hidden" name="id_test" value="<?= $test_selectionne['id_test'] ?>">
                             <button type="submit" class="btn-action btn-admis">Convoquer</button>
                         </form>
@@ -201,6 +208,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
                     <a href="<?= BASE_URL ?>/admin/test/modifier?id=<?= $test_selectionne['id_test'] ?>" class="btn-action btn-edit">Modifier</a>
                     <form method="POST" action="<?= BASE_URL ?>/admin/test/supprimer" style="display:inline"
                           onsubmit="return confirm('Supprimer ce test et toutes ses données ?')">
+                <?= csrf_champ() ?>
                         <input type="hidden" name="id_test" value="<?= $test_selectionne['id_test'] ?>">
                         <button type="submit" class="btn-action btn-delete">Supprimer</button>
                     </form>
@@ -230,6 +238,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
                             <?php else: ?>
                                 <form method="POST" action="<?= BASE_URL ?>/admin/test/convoquer"
                                       onsubmit="return confirm('Envoyer les convocations par mail à tous les candidats de ce test ?')">
+                <?= csrf_champ() ?>
                                     <input type="hidden" name="id_test" value="<?= $t['id_test'] ?>">
                                     <button type="submit" class="btn-action btn-admis">Convoquer</button>
                                 </form>
@@ -237,6 +246,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
                             <a href="<?= BASE_URL ?>/admin/test/modifier?id=<?= $t['id_test'] ?>" class="btn-action btn-edit">Modifier</a>
                             <form method="POST" action="<?= BASE_URL ?>/admin/test/supprimer"
                                   onsubmit="return confirm('Supprimer ce test et toutes ses données ?')">
+                <?= csrf_champ() ?>
                                 <input type="hidden" name="id_test" value="<?= $t['id_test'] ?>">
                                 <button type="submit" class="btn-action btn-delete">Supprimer</button>
                             </form>
@@ -256,6 +266,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
 <div class="form-card">
 <h2>Modifier l'exercice</h2>
 <form action="<?= BASE_URL ?>/admin/jeux/modifier" method="POST">
+                <?= csrf_champ() ?>
     <input type="hidden" name="id_jeux" value="<?= (int)$jeu['id_jeux'] ?>">
 
     <div class="form-group">
@@ -310,6 +321,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
 <div class="form-card">
 <h2>Modifier le test</h2>
 <form action="<?= BASE_URL ?>/admin/test/modifier" method="POST">
+                <?= csrf_champ() ?>
     <input type="hidden" name="id_test" value="<?= (int)$test_edition['id_test'] ?>">
 
     <div class="form-group">
@@ -345,7 +357,31 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
 
     <div class="form-group">
         <label>
-            Candidats
+            Groupes à convoquer
+            <?php if ($est_convoque ?? false): ?>
+                <span style="font-size:12px;color:#d62828;font-weight:400;margin-left:8px;">⚠ Convocations déjà envoyées — verrouillé</span>
+            <?php endif; ?>
+        </label>
+        <p style="font-size:12px;color:#9ca3af;margin:-4px 0 8px;">Cocher un groupe convoque automatiquement tous ses membres.</p>
+        <?php if (empty($groupes)): ?>
+            <p style="font-size:13px;color:#9ca3af;">Aucun groupe créé pour le moment.</p>
+        <?php else: ?>
+            <?php foreach ($groupes as $g): ?>
+                <div class="checkbox-line">
+                    <label <?= ($est_convoque ?? false) ? 'style="opacity:0.5;pointer-events:none;"' : '' ?>>
+                        <input type="checkbox" name="groupes[]" value="<?= $g['id_groupe'] ?>" <?= ($est_convoque ?? false) ? 'disabled' : '' ?>>
+                        <?= htmlspecialchars($g['nom']) ?>
+                        <?php if (!empty($g['promotion'])): ?> — <?= htmlspecialchars($g['promotion']) ?><?php endif; ?>
+                        <span style="font-size:12px;color:#9ca3af;">(<?= (int)$g['nb_candidats'] ?> candidat<?= $g['nb_candidats'] > 1 ? 's' : '' ?>)</span>
+                    </label>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group">
+        <label>
+            Candidats individuels
             <?php if ($est_convoque ?? false): ?>
                 <span style="font-size:12px;color:#d62828;font-weight:400;margin-left:8px;">⚠ Convocations déjà envoyées — candidats verrouillés</span>
             <?php endif; ?>
@@ -375,6 +411,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
 <div class="form-card">
 
 <form action="<?= BASE_URL ?>/admin/jeux/creer" method="POST">
+                <?= csrf_champ() ?>
 
     <div class="form-group">
         <label for="titre">Titre du jeu</label>
@@ -437,6 +474,7 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
         <h2>Créer un test</h2>
 
         <form action="<?= BASE_URL ?>/admin/test/creer" method="POST">
+                <?= csrf_champ() ?>
 
 
             <div class="form-group">
@@ -463,7 +501,29 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
             </div>
 
             <div class="form-group">
-                <label>Candidats concernés</label>
+                <label>Groupes à convoquer</label>
+                <p style="font-size:12px;color:#9ca3af;margin:-4px 0 8px;">Cocher un groupe convoque automatiquement tous ses membres — pas besoin de les sélectionner un par un ci-dessous.</p>
+                <?php if (empty($groupes)): ?>
+                    <p style="font-size:13px;color:#9ca3af;">
+                        Aucun groupe créé pour le moment.
+                        <a href="<?= BASE_URL ?>/admin?page=groupes" style="color:#0091e6;">Créer un groupe</a>
+                    </p>
+                <?php else: ?>
+                    <?php foreach ($groupes as $g): ?>
+                        <div class="checkbox-line">
+                            <label>
+                                <input type="checkbox" name="groupes[]" value="<?= $g['id_groupe'] ?>">
+                                <?= htmlspecialchars($g['nom']) ?>
+                                <?php if (!empty($g['promotion'])): ?> — <?= htmlspecialchars($g['promotion']) ?><?php endif; ?>
+                                <span style="font-size:12px;color:#9ca3af;">(<?= (int)$g['nb_candidats'] ?> candidat<?= $g['nb_candidats'] > 1 ? 's' : '' ?>)</span>
+                            </label>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+
+            <div class="form-group">
+                <label>Candidats individuels (en plus des groupes cochés ci-dessus)</label>
                 <?php foreach ($candidats as $c): ?>
                     <div class="checkbox-line">
                         <label>
@@ -481,6 +541,125 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
 
     </div>
  <?php endif; ?>
+
+<?php if ($page === 'groupes'): ?>
+
+<div class="form-card">
+    <h2>Créer un groupe</h2>
+    <form action="<?= BASE_URL ?>/admin/groupe/creer" method="POST" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+                <?= csrf_champ() ?>
+        <div class="form-group" style="flex:2;min-width:180px;margin:0;">
+            <label for="nom">Nom du groupe</label>
+            <input type="text" name="nom" id="nom" placeholder="Ex : Promo 2026 - Groupe A" required>
+        </div>
+        <div class="form-group" style="flex:1;min-width:140px;margin:0;">
+            <label for="promotion">Promotion</label>
+            <input type="text" name="promotion" id="promotion" placeholder="Ex : ESIEA 2026">
+        </div>
+        <div class="form-group" style="flex:1;min-width:100px;margin:0;">
+            <label for="annee">Année</label>
+            <input type="number" name="annee" id="annee" min="2000" max="2100" placeholder="2026">
+        </div>
+        <button type="submit" class="btn-submit" style="margin:0;">+ Créer</button>
+    </form>
+</div>
+
+<div class="table-wrap">
+    <h3>Groupes de l'établissement</h3>
+    <?php if (empty($groupes)): ?>
+        <p style="text-align:center;color:#999;padding:24px;">Aucun groupe créé pour le moment.</p>
+    <?php else: ?>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Promotion</th>
+                        <th>Année</th>
+                        <th>Candidats</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($groupes as $g): ?>
+                    <tr<?= ($groupe_selectionne && (int)$groupe_selectionne['id_groupe'] === (int)$g['id_groupe']) ? ' style="background:rgba(0,145,230,0.08);"' : '' ?>>
+                        <td><?= htmlspecialchars($g['nom']) ?></td>
+                        <td><?= htmlspecialchars($g['promotion'] ?: '–') ?></td>
+                        <td><?= htmlspecialchars((string)($g['annee'] ?: '–')) ?></td>
+                        <td><?= (int)$g['nb_candidats'] ?></td>
+                        <td style="display:flex;gap:8px;">
+                            <a class="btn-action" style="background:#0091e6;color:#fff;text-decoration:none;"
+                               href="<?= BASE_URL ?>/admin?page=groupes&groupe_id=<?= $g['id_groupe'] ?>">Gérer</a>
+                            <form method="POST" action="<?= BASE_URL ?>/admin/groupe/supprimer"
+                                  onsubmit="return confirm('Supprimer ce groupe ? Les candidats ne seront pas supprimés, seulement retirés du groupe.')" style="display:inline">
+                <?= csrf_champ() ?>
+                                <input type="hidden" name="id_groupe" value="<?= $g['id_groupe'] ?>">
+                                <button type="submit" class="btn-action btn-delete">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+</div>
+
+<?php if ($groupe_selectionne): ?>
+<div class="form-card">
+    <h2>Membres — <?= htmlspecialchars($groupe_selectionne['nom']) ?></h2>
+
+    <div class="form-group">
+        <label>Ajouter un candidat au groupe</label>
+        <?php if (empty($candidats_disponibles)): ?>
+            <p style="font-size:13px;color:#9ca3af;">Tous les candidats actifs de l'établissement sont déjà dans ce groupe.</p>
+        <?php else: ?>
+            <form method="POST" action="<?= BASE_URL ?>/admin/groupe/candidat/ajouter" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                <?= csrf_champ() ?>
+                <input type="hidden" name="id_groupe" value="<?= $groupe_selectionne['id_groupe'] ?>">
+                <select name="id_candidat" required style="flex:1;min-width:220px;">
+                    <?php foreach ($candidats_disponibles as $c): ?>
+                        <option value="<?= $c['id_candidat'] ?>"><?= htmlspecialchars($c['prenom'] . ' ' . $c['nom']) ?> (<?= htmlspecialchars($c['email']) ?>)</option>
+                    <?php endforeach; ?>
+                </select>
+                <button type="submit" class="btn-submit" style="margin:0;">Ajouter</button>
+            </form>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group">
+        <label>Membres actuels (<?= count($membres_groupe) ?>)</label>
+        <?php if (empty($membres_groupe)): ?>
+            <p style="font-size:13px;color:#9ca3af;">Ce groupe n'a pas encore de membre.</p>
+        <?php else: ?>
+            <div class="table-container">
+                <table>
+                    <thead><tr><th>Nom</th><th>Prénom</th><th>E-mail</th><th></th></tr></thead>
+                    <tbody>
+                    <?php foreach ($membres_groupe as $m): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($m['nom']) ?></td>
+                            <td><?= htmlspecialchars($m['prenom']) ?></td>
+                            <td><?= htmlspecialchars($m['email']) ?></td>
+                            <td>
+                                <form method="POST" action="<?= BASE_URL ?>/admin/groupe/candidat/retirer" style="display:inline">
+                <?= csrf_champ() ?>
+                                    <input type="hidden" name="id_groupe" value="<?= $groupe_selectionne['id_groupe'] ?>">
+                                    <input type="hidden" name="id_candidat" value="<?= $m['id_candidat'] ?>">
+                                    <button type="submit" class="btn-action btn-delete">Retirer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+<?php endif; ?>
+
+<?php endif; ?>
 
     <?php if ($page === 'etudiants'): ?>
 
@@ -543,11 +722,13 @@ elseif (isset($_GET['infos_error']))  { $toast_msg = 'Impossible de retrouver le
                                         </span>
                                         <?php if (!$decision_finale): ?>
                                         <form method="POST" action="<?= BASE_URL ?>/admin/candidat/decision" style="display:inline">
+                <?= csrf_champ() ?>
                                             <input type="hidden" name="id_passage_test" value="<?= (int)$id_passage ?>">
                                             <input type="hidden" name="decision" value="admis">
                                             <button type="submit" class="btn-action btn-admis">Admis</button>
                                         </form>
                                         <form method="POST" action="<?= BASE_URL ?>/admin/candidat/decision" style="display:inline">
+                <?= csrf_champ() ?>
                                             <input type="hidden" name="id_passage_test" value="<?= (int)$id_passage ?>">
                                             <input type="hidden" name="decision" value="refuse">
                                             <button type="submit" class="btn-action btn-delete">Refusé</button>

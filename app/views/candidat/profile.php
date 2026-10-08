@@ -15,6 +15,7 @@
     <?php endif; ?>
 
     <form id="profile-form" action="<?= BASE_URL ?>/profile" method="post" novalidate>
+        <?= csrf_champ() ?>
 
         <label for="prenom">Prénom</label>
 

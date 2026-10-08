@@ -17,6 +17,3 @@ VALUES (
     'super_admin',
     (SELECT id_etablissement FROM ETABLISSEMENT WHERE email_contact = 'contact@codewarden.test' LIMIT 1)
 );
-
-ALTER TABLE JEUX
-ADD COLUMN description TEXT NULL AFTER titre;

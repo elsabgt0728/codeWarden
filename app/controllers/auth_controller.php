@@ -38,6 +38,8 @@ function page_connexion()
 // POST /login — Traite le formulaire de connexion
 function traiter_connexion()
 {
+    verifier_csrf();
+
     $email      = trim($_POST['email']    ?? '');
     $motDePasse = $_POST['password']      ?? '';
 
@@ -86,6 +88,8 @@ function page_inscription()
 // POST /signup — Traite le formulaire d'inscription
 function traiter_inscription()
 {
+    verifier_csrf();
+
     $prenom     = trim($_POST['prenom']   ?? '');
     $nom        = trim($_POST['nom']      ?? '');
     $email      = trim($_POST['email']    ?? '');

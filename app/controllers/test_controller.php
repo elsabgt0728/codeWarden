@@ -3,18 +3,48 @@
 function traiter_creation_test()
 {
     verifier_admin();
+    verifier_csrf();
 
     require_once ROOT . '/app/models/test.php';
     require_once ROOT . '/app/models/session.php';
     require_once ROOT . '/app/models/convocation.php';
+    require_once ROOT . '/app/models/jeux.php';
+    require_once ROOT . '/app/models/candidat.php';
+    require_once ROOT . '/app/models/groupe.php';
+
+    $id_admin         = $_SESSION['id_admin'];
+    $id_etablissement = $_SESSION['id_etablissement'];
 
     // Données du formulaire
-    $titre         = trim($_POST['titre_test']);
-    $duree         = intval($_POST['duree']);
-    $jeux_ids      = $_POST['jeux']      ?? [];
-    $candidats_ids = $_POST['candidats'] ?? [];
+    $titre          = trim($_POST['titre_test'] ?? '');
+    $duree          = intval($_POST['duree'] ?? 0);
+    $jeux_ids       = $_POST['jeux']      ?? [];
+    $candidats_ids  = $_POST['candidats'] ?? [];
+    $groupes_ids    = $_POST['groupes']   ?? [];
 
-    $id_admin = $_SESSION['id_admin'];
+    if ($titre === '' || $duree <= 0) {
+        header('Location: ' . BASE_URL . '/admin?page=creer_test&error=champs_manquants');
+        exit;
+    }
+
+    // Candidats sélectionnés individuellement + candidats résolus depuis les
+    // groupes cochés, fusionnés et dédupliqués (un candidat peut être dans
+    // un groupe convoqué ET coché individuellement, on ne le convoque qu'une fois)
+    $candidats_ids = array_values(array_unique(array_merge(
+        array_map('intval', $candidats_ids),
+        candidats_par_groupes($groupes_ids, $id_etablissement)
+    )));
+
+    // Sécurité : on ne fait pas confiance aux IDs reçus en POST, on ne garde
+    // que ceux qui appartiennent réellement à l'établissement de l'admin
+    // (même si l'UI ne propose normalement que les bons éléments).
+    $jeux_ids      = jeux_filtrer_par_etablissement($jeux_ids, $id_etablissement);
+    $candidats_ids = candidats_filtrer_par_etablissement($candidats_ids, $id_etablissement);
+
+    if (empty($jeux_ids)) {
+        header('Location: ' . BASE_URL . '/admin?page=creer_test&error=aucun_jeu');
+        exit;
+    }
 
     // 1) Créer le TEST
     $id_test = tests_creer($titre, $duree, 'actif', $id_admin);
@@ -44,6 +74,7 @@ function traiter_creation_test()
 function admin_convoquer_test()
 {
     verifier_admin();
+    verifier_csrf();
 
     require_once ROOT . '/app/models/convocation.php';
     require_once ROOT . '/app/models/test.php';
@@ -76,25 +107,28 @@ function admin_convoquer_test()
     $protocole  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $lien_email = $protocole . '://' . $_SERVER['HTTP_HOST'] . BASE_URL . '/candidat/commencer?id_test=' . $id_test;
 
-    $nb_ok = 0;
-    foreach ($convocations as $conv) {
-        $ok = envoyer_convocation(
-            $conv['email'],
-            $conv['prenom'],
-            $conv['nom'],
-            $test['titre'],
-            $test['duree_minutes'],
-            $lien_email,
-            $date_expiration
-        );
-        if ($ok) {
-            $nb_ok++;
-        } else {
-            error_log('[CodeWarden] envoyer_convocation échoué pour ' . $conv['email'] . ' (id_test=' . $id_test . ')');
-        }
+    // Un seul lot = une seule connexion SMTP réutilisée pour tous les candidats,
+    // au lieu d'en ouvrir une par candidat (cf. mailer.php)
+    $resultat = envoyer_convocations_lot(
+        $convocations,
+        $test['titre'],
+        $test['duree_minutes'],
+        $lien_email,
+        $date_expiration
+    );
+
+    $nb_ok = count($resultat['ok']);
+
+    if (!empty($resultat['echecs'])) {
+        error_log('[CodeWarden] Échec envoi convocation pour ' . implode(', ', $resultat['echecs']) . ' (id_test=' . $id_test . ')');
     }
 
-    header('Location: ' . BASE_URL . '/admin?page=tests&success=convoque&nb=' . $nb_ok);
+    $url = BASE_URL . '/admin?page=tests&success=convoque&nb=' . $nb_ok;
+    if (!empty($resultat['echecs'])) {
+        $url .= '&nb_echecs=' . count($resultat['echecs']);
+    }
+
+    header('Location: ' . $url);
     exit;
 }
 
@@ -107,12 +141,14 @@ function page_modifier_test()
     require_once ROOT . '/app/models/candidat.php';
     require_once ROOT . '/app/models/convocation.php';
     require_once ROOT . '/app/models/session.php';
+    require_once ROOT . '/app/models/groupe.php';
 
     $id   = (int)($_GET['id'] ?? 0);
     $test = $id ? test_recuperer_par_id($id) : null;
     if (!$test) { header('Location: ' . BASE_URL . '/admin?page=tests'); exit; }
 
-    $id_admin = $_SESSION['id_admin'];
+    $id_admin         = $_SESSION['id_admin'];
+    $id_etablissement = $_SESSION['id_etablissement'];
 
     // Jeux actuellement assignés à ce test
     $jeux_assignes    = test_recuperer_jeux($id);
@@ -132,8 +168,9 @@ function page_modifier_test()
         'exercice_selectionne'  => null,
         'test_selectionne'      => null,
         'test_edition'          => $test,
-        'tous_les_jeux'         => jeux_tous_actifs(),
-        'tous_les_candidats'    => candidats_tous_actifs(),
+        'tous_les_jeux'         => jeux_tous_actifs($id_etablissement),
+        'tous_les_candidats'    => candidats_tous_actifs($id_etablissement),
+        'groupes'               => lister_groupes_etablissement($id_etablissement),
         'ids_jeux_assignes'     => $ids_jeux_assignes,
         'ids_candidats_assignes'=> $ids_candidats_assignes,
         'est_convoque'          => $est_convoque,
@@ -143,9 +180,15 @@ function page_modifier_test()
 function traiter_modification_test()
 {
     verifier_admin();
+    verifier_csrf();
     require_once ROOT . '/app/models/test.php';
     require_once ROOT . '/app/models/session.php';
     require_once ROOT . '/app/models/convocation.php';
+    require_once ROOT . '/app/models/jeux.php';
+    require_once ROOT . '/app/models/candidat.php';
+    require_once ROOT . '/app/models/groupe.php';
+
+    $id_etablissement = $_SESSION['id_etablissement'];
 
     $id        = (int)($_POST['id_test']   ?? 0);
     $titre     = trim($_POST['titre_test'] ?? '');
@@ -153,11 +196,22 @@ function traiter_modification_test()
     $statut    = $_POST['statut']          ?? 'actif';
     $jeux_ids  = $_POST['jeux']            ?? [];
     $cands_ids = $_POST['candidats']       ?? [];
+    $groupes_ids = $_POST['groupes']       ?? [];
 
     if (!$id || $titre === '') {
         header('Location: ' . BASE_URL . '/admin/test/modifier?id=' . $id . '&error=1');
         exit;
     }
+
+    // Même logique de fusion groupes + candidats individuels qu'à la création
+    $cands_ids = array_values(array_unique(array_merge(
+        array_map('intval', $cands_ids),
+        candidats_par_groupes($groupes_ids, $id_etablissement)
+    )));
+
+    // Sécurité : revalidation serveur des IDs reçus (cf. traiter_creation_test)
+    $jeux_ids  = jeux_filtrer_par_etablissement($jeux_ids, $id_etablissement);
+    $cands_ids = candidats_filtrer_par_etablissement($cands_ids, $id_etablissement);
 
     // Mettre à jour titre/durée/statut
     test_mettre_a_jour($id, $titre, $duree, $statut);
@@ -185,6 +239,7 @@ function traiter_modification_test()
 function traiter_suppression_test()
 {
     verifier_admin();
+    verifier_csrf();
     require_once ROOT . '/app/models/test.php';
 
     $id = (int)($_POST['id_test'] ?? 0);
@@ -271,4 +326,3 @@ function candidat_commencer_test()
         'scores_existants' => $scores_existants,
     ]);
 }
-

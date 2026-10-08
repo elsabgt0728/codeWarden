@@ -28,6 +28,7 @@
     <?php endif; ?>
 
     <form id="login-form" action="<?= BASE_URL ?>/login" method="post" novalidate>
+        <?= csrf_champ() ?>
 
         <label for="email">E-mail</label>
         <input type="email" id="email" name="email" value="<?= htmlspecialchars($email) ?>">
