@@ -131,7 +131,10 @@ function traiter_inscription()
     }
 
     // On ne stocke jamais un mot de passe en clair — on le hache avec bcrypt
-    creer_candidat($nom, $prenom, $email, password_hash($motDePasse, PASSWORD_BCRYPT));
+    // Mono-établissement pour l'instant : on rattache automatiquement le
+    // candidat au seul établissement existant.
+    $id_etablissement = etablissement_id_par_defaut();
+    creer_candidat($nom, $prenom, $email, password_hash($motDePasse, PASSWORD_BCRYPT), $id_etablissement);
     $_SESSION['signup_success'] = 'Compte créé. Vous pouvez vous connecter.';
     header('Location: ' . BASE_URL . '/login');
     exit;

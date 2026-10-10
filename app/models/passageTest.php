@@ -91,3 +91,19 @@ function passage_test_expire($id_passage_test)
                           WHERE id_passage_test = ?");
     $stmt->execute([$id_passage_test]);
 }
+
+/**
+ * Sécurité : vérifie qu'un id_passage_test envoyé par le client (JS ou URL)
+ * appartient bien au candidat actuellement connecté, avant toute lecture ou
+ * écriture dessus. Sans ça, un onglet resté ouvert sur le passage d'un AUTRE
+ * candidat (ou un id_passage deviné/modifié dans la requête) peut faire
+ * enregistrer un score ou afficher un résultat sur le passage de quelqu'un
+ * d'autre.
+ */
+function passage_appartient_candidat($id_passage_test, $id_candidat): bool
+{
+    $db   = connecter_bdd();
+    $stmt = $db->prepare("SELECT COUNT(*) FROM passage_test WHERE id_passage_test = ? AND id_candidat = ?");
+    $stmt->execute([$id_passage_test, $id_candidat]);
+    return (int)$stmt->fetchColumn() > 0;
+}

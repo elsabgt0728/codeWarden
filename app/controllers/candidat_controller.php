@@ -8,76 +8,11 @@ function page_candidat()
     verifier_candidat();
     $user = trouver_candidat_par_id($_SESSION['id_candidat']);
 
-    if ($page === 'test') {
-        $id_test = $_GET['id_test'] ?? null;
-        if (!$id_test) die("Aucun test sélectionné.");
-
-        $test = test_recuperer_par_id($id_test);
-        if (!$test) die("Test introuvable.");
-
-        // Vérifier que ce candidat est bien convoqué pour ce test
-        require_once ROOT . '/app/models/convocation.php';
-        if (!candidat_est_convoque((int)$_SESSION['id_candidat'], (int)$id_test)) {
-            http_response_code(403);
-            die("Accès refusé : vous n'êtes pas convoqué(e) pour ce test.");
-        }
-
-        // Vérifier que le candidat n'a pas déjà passé ce test
-        if (candidat_a_deja_passe((int)$_SESSION['id_candidat'], (int)$id_test)) {
-            die("Vous avez déjà passé ce test. Consultez votre tableau de bord pour voir vos résultats.");
-        }
-
-        // Récupérer tous les jeux HTML du test (dans l'ordre)
-        $jeux_bruts = test_recuperer_jeux($id_test);
-        $jeux_liste = [];
-        foreach ($jeux_bruts as $jeu) {
-            if (!empty($jeu['contenu_html'])) {
-                $jeux_liste[] = [
-                    'id_jeux'      => (int)$jeu['id_jeux'],
-                    'titre'        => $jeu['titre'],
-                    'bareme'       => (int)$jeu['bareme'],
-                    'contenu_html' => $jeu['contenu_html'],
-                ];
-            }
-        }
-        if (empty($jeux_liste)) die("Aucun jeu HTML disponible pour ce test.");
-
-        // Créer ou récupérer un passage en cours
-        require_once ROOT . '/app/models/passageTest.php';
-        require_once ROOT . '/app/models/session.php';
-        require_once ROOT . '/app/models/resultat.php';
-
-        $passage_existant = passage_test_en_cours((int) $_SESSION['id_candidat']);
-        if ($passage_existant) {
-            $id_passage = (int) $passage_existant['id_passage_test'];
-        } else {
-            $session = session_recuperer_par_test((int) $id_test);
-            if (!$session) die("Aucune session active pour ce test.");
-            $id_passage = (int) creer_passage_test((int) $_SESSION['id_candidat'], (int) $session['id_session']);
-            $passage_existant = passage_test_en_cours((int) $_SESSION['id_candidat']);
-        }
-
-        // Temps déjà écoulé (timer reprend où il en était après refresh)
-        $temps_ecoule = 0;
-        if ($passage_existant && !empty($passage_existant['date_debut'])) {
-            $temps_ecoule = max(0, time() - strtotime($passage_existant['date_debut']));
-        }
-
-        // Jeux déjà joués (progression restaurée après refresh)
-        $scores_existants = reponses_scores_par_passage($id_passage);
-
-        afficher_vue('candidat/pageCandidat', [
-            'page'             => 'test',
-            'jeux_liste'       => $jeux_liste,
-            'duree'            => (int) $test['duree_minutes'],
-            'user'             => $user,
-            'id_passage'       => $id_passage,
-            'id_test'          => (int) $id_test,
-            'temps_ecoule'     => $temps_ecoule,
-            'scores_existants' => $scores_existants,
-        ]);
-        return;
-    }
+    // NB : le passage d'un test se fait exclusivement via le lien personnel
+    // /candidat/commencer?token=... (candidat_commencer_test() dans
+    // test_controller.php, vérifié par jeton propre à chaque candidat).
+    // Il n'y a pas de route ?page=test ici : le bouton "Commencer" du
+    // tableau de bord pointe directement vers ce lien personnel.
 
     if ($page === 'finish') {
         candidat_afficher_finish();

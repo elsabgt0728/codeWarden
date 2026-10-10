@@ -255,6 +255,7 @@ CREATE TABLE CONVOCATION (
     date_envoi DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     lien_acces VARCHAR(500) NULL,
+    token VARCHAR(64) NULL UNIQUE,
     date_expiration DATETIME NULL,
 
     id_candidat INT NOT NULL,

@@ -104,8 +104,16 @@ function admin_convoquer_test()
     $date_expiration = date('d/m/Y', strtotime('+7 days'));
 
     // URL absolue obligatoire pour les liens dans les emails
-    $protocole  = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $lien_email = $protocole . '://' . $_SERVER['HTTP_HOST'] . BASE_URL . '/candidat/commencer?id_test=' . $id_test;
+    $protocole = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $base_lien = $protocole . '://' . $_SERVER['HTTP_HOST'] . BASE_URL . '/candidat/commencer?token=';
+
+    // Sécurité : chaque candidat reçoit un lien PERSONNEL contenant son propre
+    // jeton (conv['token'], généré par convocation_creer), et non plus un lien
+    // partagé "?id_test=X" valable pour n'importe quel compte connecté.
+    foreach ($convocations as &$conv) {
+        $conv['lien'] = $base_lien . $conv['token'];
+    }
+    unset($conv);
 
     // Un seul lot = une seule connexion SMTP réutilisée pour tous les candidats,
     // au lieu d'en ouvrir une par candidat (cf. mailer.php)
@@ -113,7 +121,6 @@ function admin_convoquer_test()
         $convocations,
         $test['titre'],
         $test['duree_minutes'],
-        $lien_email,
         $date_expiration
     );
 
@@ -255,19 +262,35 @@ function candidat_commencer_test()
     require_once ROOT . '/app/models/test.php';
     require_once ROOT . '/app/models/passageTest.php';
     require_once ROOT . '/app/models/session.php';
+    require_once ROOT . '/app/models/convocation.php';
 
-    $id_test = $_GET['id_test'] ?? null;
-    if (!$id_test) die("Aucun test sélectionné.");
+    // Le lien de convocation est désormais personnel : il porte un jeton
+    // propre à CE candidat, pas juste un id_test valable pour qui que ce soit.
+    $token = $_GET['token'] ?? null;
+    if (!$token) die("Lien de convocation invalide.");
+
+    $convocation = convocation_par_token($token);
+    if (!$convocation) {
+        http_response_code(404);
+        die("Lien de convocation invalide ou introuvable.");
+    }
+
+    // Sécurité : ce lien n'est valable que pour le candidat auquel il a été
+    // envoyé — pas pour n'importe quel compte connecté au moment du clic.
+    if ((int)$convocation['id_candidat'] !== (int)$_SESSION['id_candidat']) {
+        http_response_code(403);
+        die("Ce lien de convocation est associé à un autre compte candidat. Déconnectez-vous puis reconnectez-vous avec le compte auquel ce lien a été envoyé.");
+    }
+
+    if (!empty($convocation['date_expiration']) && strtotime($convocation['date_expiration']) < time()) {
+        http_response_code(403);
+        die("Ce lien de convocation a expiré.");
+    }
+
+    $id_test = (int) $convocation['id_test'];
 
     $test = test_recuperer_par_id($id_test);
     if (!$test) die("Test introuvable.");
-
-    // Vérifier que ce candidat est bien convoqué pour ce test
-    require_once ROOT . '/app/models/convocation.php';
-    if (!candidat_est_convoque((int)$_SESSION['id_candidat'], (int)$id_test)) {
-        http_response_code(403);
-        die("Accès refusé : vous n'êtes pas convoqué(e) pour ce test.");
-    }
 
     // Vérifier que le candidat n'a pas déjà passé ce test
     if (candidat_a_deja_passe((int)$_SESSION['id_candidat'], (int)$id_test)) {

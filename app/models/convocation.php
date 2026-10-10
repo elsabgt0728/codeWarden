@@ -2,10 +2,34 @@
 
 function convocation_creer($id_candidat, $id_session, $lien_acces, $date_expiration = null)
 {
+    $db    = connecter_bdd();
+    // Jeton personnel et imprévisible : c'est lui, pas l'URL "?id_test=X",
+    // qui détermine désormais qui a le droit d'ouvrir ce test précis.
+    $token = bin2hex(random_bytes(32));
+
+    $stmt = $db->prepare("INSERT INTO convocation (lien_acces, token, date_expiration, id_candidat, id_session)
+                          VALUES (?, ?, ?, ?, ?)");
+    return $stmt->execute([$lien_acces, $token, $date_expiration, $id_candidat, $id_session]);
+}
+
+/**
+ * Retrouve la convocation correspondant à un jeton de lien mail, avec
+ * l'id_test associé. Renvoie false si le jeton est inconnu.
+ */
+function convocation_par_token($token)
+{
+    if (empty($token)) return false;
+
     $db   = connecter_bdd();
-    $stmt = $db->prepare("INSERT INTO convocation (lien_acces, date_expiration, id_candidat, id_session)
-                          VALUES (?, ?, ?, ?)");
-    return $stmt->execute([$lien_acces, $date_expiration, $id_candidat, $id_session]);
+    $stmt = $db->prepare("
+        SELECT conv.*, s.id_test
+        FROM convocation conv
+        JOIN session s ON s.id_session = conv.id_session
+        WHERE conv.token = ?
+    ");
+    $stmt->execute([$token]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row ?: false;
 }
 
 function candidat_est_convoque($id_candidat, $id_test)
@@ -50,7 +74,7 @@ function convocations_par_test($id_test)
 {
     $db   = connecter_bdd();
     $stmt = $db->prepare("
-        SELECT c.id_candidat, c.nom, c.prenom, c.email, conv.lien_acces
+        SELECT c.id_candidat, c.nom, c.prenom, c.email, conv.lien_acces, conv.token
         FROM convocation conv
         JOIN session   s ON s.id_session  = conv.id_session
         JOIN candidat  c ON c.id_candidat = conv.id_candidat

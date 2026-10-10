@@ -171,7 +171,7 @@ $page = $page ?? 'dashboard';
                     <h4>Vous pouvez commencer votre test d'admission.</h4>
                 </div>
             </div>
-            <a class="btnStart" href="<?= BASE_URL ?>/candidat/commencer?id_test=<?= $test_info['id_test'] ?>" role="button">
+            <a class="btnStart" href="<?= BASE_URL ?>/candidat/commencer?token=<?= urlencode($test_info['token']) ?>" role="button">
                 Passer le test <span class="arrow">→</span>
             </a>
         </div>

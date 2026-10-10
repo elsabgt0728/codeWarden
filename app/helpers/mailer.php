@@ -261,14 +261,16 @@ function envoyer_convocation($candidat_email, $candidat_prenom, $candidat_nom, $
  * susceptible de déclencher le throttling anti-spam du serveur mail sur de
  * grosses promotions.
  *
- * @param array  $convocations    liste de ['email'=>, 'prenom'=>, 'nom'=>, ...]
+ * @param array  $convocations    liste de ['email'=>, 'prenom'=>, 'nom'=>, 'lien'=>, ...]
+ *                                — 'lien' est désormais PERSONNEL à chaque
+ *                                candidat (contient son propre jeton), donc
+ *                                calculé par l'appelant avant ce lot, pas ici.
  * @param string $titre_test
  * @param int    $duree_minutes
- * @param string $lien_test       lien d'accès (identique pour tous les candidats d'un même test)
  * @param ?string $date_expiration
  * @return array ['ok' => [emails envoyés], 'echecs' => [emails en échec]]
  */
-function envoyer_convocations_lot(array $convocations, $titre_test, $duree_minutes, $lien_test, $date_expiration = null): array
+function envoyer_convocations_lot(array $convocations, $titre_test, $duree_minutes, $date_expiration = null): array
 {
     $resultat = ['ok' => [], 'echecs' => []];
 
@@ -286,7 +288,7 @@ function envoyer_convocations_lot(array $convocations, $titre_test, $duree_minut
             $conv['nom'],
             $titre_test,
             $duree_minutes,
-            $lien_test,
+            $conv['lien'],
             $date_expiration
         );
 

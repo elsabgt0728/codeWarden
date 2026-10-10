@@ -1,0 +1,1 @@
+ALTER TABLE jeux ADD COLUMN contenu_html LONGTEXT NULL AFTER contenu_json;
