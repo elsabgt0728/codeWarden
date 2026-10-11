@@ -32,6 +32,51 @@ function convocation_par_token($token)
     return $row ?: false;
 }
 
+/**
+ * Génère un nouveau code à 6 chiffres pour cette convocation, valable 10
+ * minutes, et remet le compteur de tentatives à zéro. Renvoie le code en
+ * clair (à envoyer par e-mail immédiatement, il n'est jamais renvoyé ensuite).
+ */
+function convocation_generer_otp($id_convocation)
+{
+    $db   = connecter_bdd();
+    $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+    $stmt = $db->prepare("
+        UPDATE convocation
+        SET otp_code = ?, otp_expiration = DATE_ADD(NOW(), INTERVAL 10 MINUTE), otp_tentatives = 0
+        WHERE id_convocation = ?
+    ");
+    $stmt->execute([$code, $id_convocation]);
+
+    return $code;
+}
+
+/**
+ * Vérifie le code saisi par le candidat pour cette convocation.
+ * Renvoie 'ok', ou un code d'erreur : 'incorrect', 'expire', 'trop_tentatives', 'introuvable'.
+ */
+function convocation_verifier_otp($id_convocation, $code_saisi): string
+{
+    $db   = connecter_bdd();
+    $stmt = $db->prepare("SELECT otp_code, otp_expiration, otp_tentatives FROM convocation WHERE id_convocation = ?");
+    $stmt->execute([$id_convocation]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$row || $row['otp_code'] === null) return 'introuvable';
+    if ((int)$row['otp_tentatives'] >= 5) return 'trop_tentatives';
+
+    // Chaque tentative (correcte ou non) compte, pour limiter le bruteforce d'un code à 6 chiffres
+    $db->prepare("UPDATE convocation SET otp_tentatives = otp_tentatives + 1 WHERE id_convocation = ?")
+       ->execute([$id_convocation]);
+
+    if (!$row['otp_expiration'] || strtotime($row['otp_expiration']) < time()) return 'expire';
+    if (!hash_equals((string)$row['otp_code'], (string)$code_saisi)) return 'incorrect';
+
+    $db->prepare("UPDATE convocation SET otp_verifie = 1 WHERE id_convocation = ?")->execute([$id_convocation]);
+    return 'ok';
+}
+
 function candidat_est_convoque($id_candidat, $id_test)
 {
     $db   = connecter_bdd();

@@ -71,6 +71,78 @@ function traiter_creation_test()
     exit;
 }
 
+function candidat_verifier_code()
+{
+    verifier_candidat();
+    verifier_csrf();
+
+    require_once ROOT . '/app/models/convocation.php';
+    require_once ROOT . '/app/models/candidat.php';
+
+    $token = $_POST['token'] ?? '';
+    $code  = trim($_POST['code'] ?? '');
+
+    $convocation = convocation_par_token($token);
+    if (!$convocation || (int)$convocation['id_candidat'] !== (int)$_SESSION['id_candidat']) {
+        http_response_code(403);
+        die("Lien invalide.");
+    }
+
+    $resultat = convocation_verifier_otp($convocation['id_convocation'], $code);
+
+    if ($resultat === 'ok') {
+        header('Location: ' . BASE_URL . '/candidat/commencer?token=' . urlencode($token));
+        exit;
+    }
+
+    $messages = [
+        'incorrect'       => 'Code incorrect. Il te reste des tentatives.',
+        'expire'          => 'Ce code a expiré. Demande-en un nouveau ci-dessous.',
+        'trop_tentatives' => 'Trop de tentatives incorrectes. Demande un nouveau code.',
+        'introuvable'     => 'Aucun code en attente. Demande un nouveau code.',
+    ];
+
+    $candidat_user = trouver_candidat_par_id($_SESSION['id_candidat']);
+    afficher_vue('candidat/verif_otp', [
+        'token' => $token,
+        'email' => $candidat_user['email'],
+        'error' => $messages[$resultat] ?? 'Erreur inconnue.',
+    ]);
+}
+
+function candidat_renvoyer_code()
+{
+    verifier_candidat();
+    verifier_csrf();
+
+    require_once ROOT . '/app/models/convocation.php';
+    require_once ROOT . '/app/models/candidat.php';
+    require_once ROOT . '/app/helpers/mailer.php';
+
+    $token = $_POST['token'] ?? '';
+
+    $convocation = convocation_par_token($token);
+    if (!$convocation || (int)$convocation['id_candidat'] !== (int)$_SESSION['id_candidat']) {
+        http_response_code(403);
+        die("Lien invalide.");
+    }
+
+    // Anti-spam : un nouveau code seulement si le précédent a plus de 60s
+    // (otp_expiration a été fixée à +10min à sa génération : s'il reste plus
+    // de 9min, c'est qu'il vient d'être généré il y a moins d'une minute)
+    $trop_recent = !empty($convocation['otp_expiration'])
+        && strtotime($convocation['otp_expiration']) > time() + 9 * 60;
+
+    if (!$trop_recent) {
+        $candidat_user = trouver_candidat_par_id($_SESSION['id_candidat']);
+        $code = convocation_generer_otp($convocation['id_convocation']);
+        envoyer_code_verification($candidat_user['email'], $candidat_user['prenom'], $code);
+    }
+
+    header('Location: ' . BASE_URL . '/candidat/commencer?token=' . urlencode($token));
+    exit;
+}
+
 function admin_convoquer_test()
 {
     verifier_admin();
@@ -263,6 +335,7 @@ function candidat_commencer_test()
     require_once ROOT . '/app/models/passageTest.php';
     require_once ROOT . '/app/models/session.php';
     require_once ROOT . '/app/models/convocation.php';
+    require_once ROOT . '/app/models/candidat.php';
 
     // Le lien de convocation est désormais personnel : il porte un jeton
     // propre à CE candidat, pas juste un id_test valable pour qui que ce soit.
@@ -285,6 +358,30 @@ function candidat_commencer_test()
     if (!empty($convocation['date_expiration']) && strtotime($convocation['date_expiration']) < time()) {
         http_response_code(403);
         die("Ce lien de convocation a expiré.");
+    }
+
+    // Code de vérification par e-mail (2FA léger) : tant qu'il n'a pas été
+    // validé pour cette convocation, on bloque l'accès au test et on affiche
+    // l'écran de saisie du code (en envoyant un nouveau code si besoin).
+    if (!$convocation['otp_verifie']) {
+        $candidat_user = trouver_candidat_par_id($_SESSION['id_candidat']);
+
+        $code_absent_ou_expire = empty($convocation['otp_code'])
+            || empty($convocation['otp_expiration'])
+            || strtotime($convocation['otp_expiration']) < time();
+
+        if ($code_absent_ou_expire) {
+            $code = convocation_generer_otp($convocation['id_convocation']);
+            require_once ROOT . '/app/helpers/mailer.php';
+            envoyer_code_verification($candidat_user['email'], $candidat_user['prenom'], $code);
+        }
+
+        afficher_vue('candidat/verif_otp', [
+            'token' => $token,
+            'email' => $candidat_user['email'],
+            'error' => null,
+        ]);
+        return;
     }
 
     $id_test = (int) $convocation['id_test'];

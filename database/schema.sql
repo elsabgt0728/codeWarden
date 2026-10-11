@@ -78,6 +78,7 @@ CREATE TABLE JEUX (
         ) NOT NULL DEFAULT 'moyen',
         bareme INT NOT NULL DEFAULT 1,
         contenu_json JSON NULL,
+        contenu_html LONGTEXT NULL,
         statut ENUM(
             'actif',
             'inactif',
@@ -257,6 +258,13 @@ CREATE TABLE CONVOCATION (
     lien_acces VARCHAR(500) NULL,
     token VARCHAR(64) NULL UNIQUE,
     date_expiration DATETIME NULL,
+
+    -- Code de vérification à 6 chiffres envoyé par e-mail avant de pouvoir
+    -- démarrer le test (2FA léger, en plus du jeton du lien)
+    otp_code VARCHAR(6) NULL,
+    otp_expiration DATETIME NULL,
+    otp_verifie TINYINT(1) NOT NULL DEFAULT 0,  /*une fois à 1, le candidat n’aura plus jamais à resaisir de code pour cette convocation*/
+    otp_tentatives INT NOT NULL DEFAULT 0,
 
     id_candidat INT NOT NULL,
     id_session INT NOT NULL,

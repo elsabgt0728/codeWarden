@@ -103,6 +103,54 @@ function envoyer_decision($candidat_email, $candidat_prenom, $candidat_nom, $tit
     }
 }
 
+function envoyer_code_verification($candidat_email, $candidat_prenom, $code)
+{
+    $mail = _mailer_ouvrir_connexion();
+    $mail->SMTPKeepAlive = false; // envoi isolé
+
+    try {
+        $mail->addAddress($candidat_email);
+
+        $mail->isHTML(true);
+        $mail->Subject = 'Votre code de vérification – CodeWarden';
+        $mail->Body    = '
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f4f6fb;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:40px 0;">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+        <tr>
+          <td style="background:#0091e6;padding:28px 40px;text-align:center;">
+            <h1 style="margin:0;color:#ffffff;font-size:22px;">CodeWarden</h1>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:36px 40px;text-align:center;">
+            <p style="margin:0 0 20px;font-size:15px;color:#374151;">Bonjour ' . htmlspecialchars($candidat_prenom) . ',</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#374151;">Voici votre code de vérification pour démarrer votre test :</p>
+            <div style="font-size:34px;font-weight:800;letter-spacing:8px;color:#0091e6;margin:0 0 20px;">' . htmlspecialchars($code) . '</div>
+            <p style="margin:0;font-size:13px;color:#9ca3af;">Ce code est valable 10 minutes.</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>';
+        $mail->AltBody = "Bonjour $candidat_prenom,\n\nVotre code de vérification : $code\n\nValable 10 minutes.\n\nCodeWarden";
+
+        $mail->send();
+        $mail->smtpClose();
+        return true;
+    } catch (Exception $e) {
+        error_log('[CodeWarden] Mailer code vérification error — ' . $mail->ErrorInfo . ' | To: ' . $candidat_email);
+        $mail->smtpClose();
+        return false;
+    }
+}
+
 // ----------------------------------------------------------------------
 // Convocations — connexion SMTP réutilisable pour l'envoi en lot
 // ----------------------------------------------------------------------

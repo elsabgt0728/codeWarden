@@ -239,7 +239,59 @@ $page = $page ?? 'dashboard';
         }, $scores_existants ?? [])) ?>;
     </script>
 
+    <script>
+        (function () {
+            const preview = document.getElementById('webcam-preview');
+            const video   = document.getElementById('webcam-feed');
+            const blocker = document.getElementById('webcam-blocker');
+            const main    = document.querySelector('main');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                // Navigateur trop ancien, ou page chargée hors HTTPS/localhost
+                blocker.style.display = 'flex';
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(function (stream) {
+                    video.srcObject = stream;
+                    preview.style.display = 'block';
+                })
+                .catch(function () {
+                    // Accès refusé ou aucune caméra disponible : on bloque le test
+                    blocker.style.display = 'flex';
+                });
+        })();
+    </script>
+
     <main style="position:relative;">
+        <!-- Webcam : simple dissuasion visuelle, aucun enregistrement ni envoi.
+             Nécessite HTTPS (ou localhost) pour fonctionner dans le navigateur. -->
+        <div id="webcam-preview"
+             style="position:fixed;bottom:16px;right:16px;width:160px;height:120px;
+                    border-radius:10px;overflow:hidden;border:2px solid #0091e6;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.25);z-index:50;background:#000;display:none;">
+            <video id="webcam-feed" autoplay muted playsinline
+                   style="width:100%;height:100%;object-fit:cover;"></video>
+        </div>
+
+        <div id="webcam-blocker"
+             style="display:none;position:fixed;inset:0;z-index:200;background:#1f2933;
+                    color:#fff;flex-direction:column;align-items:center;justify-content:center;
+                    text-align:center;padding:32px;">
+            <div style="font-size:48px;margin-bottom:16px;">📷</div>
+            <div style="font-size:20px;font-weight:700;margin-bottom:12px;">Accès à la webcam requis</div>
+            <p style="max-width:420px;color:#cbd5e1;line-height:1.6;">
+                Ce test nécessite l'activation de ta webcam pour continuer.
+                Autorise l'accès à la caméra dans ton navigateur, puis recharge la page.
+            </p>
+            <button onclick="location.reload()"
+                    style="margin-top:20px;padding:12px 28px;background:#0091e6;color:#fff;
+                           border:none;border-radius:10px;font-weight:700;cursor:pointer;">
+                Recharger la page
+            </button>
+        </div>
+
         <!-- Overlay de transition (par-dessus l'iframe) -->
         <div id="transition-screen"
              style="display:none;position:absolute;inset:0;z-index:10;

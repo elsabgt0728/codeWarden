@@ -31,6 +31,8 @@ $routes = [
     'POST /candidat/terminer'   => 'candidat_terminer_test',
     'POST /candidat/score-jeu'  => 'candidat_enregistrer_score_jeu',
     'POST /candidat/expirer'    => 'candidat_expire_test',
+    'POST /candidat/verifier-code' => 'candidat_verifier_code',
+    'POST /candidat/renvoyer-code' => 'candidat_renvoyer_code',
 
     // Exercices (admin)
     'POST /admin/jeux/creer'     => 'traiter_creation_jeux',

@@ -43,6 +43,7 @@ function candidat_enregistrer_score_jeu()
 {
     verifier_candidat();
     require_once ROOT . '/app/models/resultat.php';
+    require_once ROOT . '/app/models/passageTest.php';
 
     $data       = json_decode(file_get_contents('php://input'), true) ?? [];
     $id_passage = (int)($data['id_passage'] ?? 0);
@@ -53,6 +54,15 @@ function candidat_enregistrer_score_jeu()
         http_response_code(400);
         header('Content-Type: application/json');
         echo json_encode(['erreur' => 'Requête invalide']);
+        exit;
+    }
+
+    // Sécurité : empêche d'enregistrer un score sur le passage d'un AUTRE
+    // candidat (onglet resté ouvert sur un autre compte, id_passage deviné...)
+    if (!passage_appartient_candidat($id_passage, (int)$_SESSION['id_candidat'])) {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode(['erreur' => 'Non autorisé']);
         exit;
     }
 
@@ -73,8 +83,9 @@ function candidat_terminer_test()
 
     $data = json_decode(file_get_contents('php://input'), true) ?? [];
 
-    $id_passage = $data['id_passage'] ?? null;
-    $id_test    = $data['id_test']    ?? null;
+    $id_passage  = $data['id_passage']  ?? null;
+    $id_test     = $data['id_test']     ?? null;
+    $scores_jeux = $data['scores_jeux'] ?? [];
 
     if (!$id_passage || !$id_test) {
         http_response_code(400);
@@ -83,10 +94,34 @@ function candidat_terminer_test()
         exit;
     }
 
+    // Sécurité : empêche de terminer/scorer le passage d'un AUTRE candidat
+    if (!passage_appartient_candidat($id_passage, (int)$_SESSION['id_candidat'])) {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode(['erreur' => 'Non autorisé']);
+        exit;
+    }
+
+    // Filet de sécurité contre une course possible entre l'appel asynchrone
+    // /candidat/score-jeu (envoyé par le navigateur à chaque jeu terminé,
+    // sans être attendu avant d'enchaîner) et cet appel /candidat/terminer :
+    // si le dernier score n'a pas encore atteint la base, on le réenregistre
+    // ici à partir de ce que le client a déjà en mémoire. Sans danger à
+    // rejouer : enregistrer_score_jeu() remplace (delete+insert) et borne
+    // toujours le score à [0,100] — ce n'est pas une nouvelle source de
+    // confiance, juste une garantie d'ordre d'écriture.
+    foreach ($scores_jeux as $sg) {
+        $id_jeu    = (int)($sg['id_jeu'] ?? 0);
+        $score_jeu = (float)($sg['score'] ?? 0);
+        if ($id_jeu > 0) {
+            enregistrer_score_jeu((int)$id_passage, $id_jeu, $score_jeu);
+        }
+    }
+
     // Sécurité : le score final n'est plus repris du JSON envoyé par le
     // client (facilement falsifiable via un appel direct à cette route).
-    // On le recalcule côté serveur à partir des scores par jeu déjà
-    // enregistrés en base au fil du test (via /candidat/score-jeu).
+    // On le recalcule côté serveur à partir des scores par jeu désormais
+    // garantis à jour en base (cf. filet de sécurité ci-dessus).
     $score = calculer_score_total_passage((int)$id_passage, (int)$id_test);
 
     terminer_passage_test($id_passage, $score);
@@ -110,6 +145,13 @@ function candidat_afficher_finish()
 
     $id_passage = $_GET['id_passage'] ?? null;
     if (!$id_passage) die("Passage introuvable.");
+
+    // Sécurité : empêche de consulter le résultat d'un AUTRE candidat en
+    // devinant/modifiant l'id_passage dans l'URL
+    if (!passage_appartient_candidat($id_passage, (int)$_SESSION['id_candidat'])) {
+        http_response_code(403);
+        die("Accès refusé : ce résultat ne vous appartient pas.");
+    }
 
     $user     = trouver_candidat_par_id($_SESSION['id_candidat']);
     $passage  = passage_test_par_id($id_passage);
@@ -138,6 +180,12 @@ function candidat_expire_test()
     if (!$id_passage || !$id_test) {
         http_response_code(400);
         exit('Requête invalide.');
+    }
+
+    // Sécurité : empêche de faire expirer le passage d'un AUTRE candidat
+    if (!passage_appartient_candidat($id_passage, (int)$_SESSION['id_candidat'])) {
+        http_response_code(403);
+        exit('Non autorisé.');
     }
 
     passage_test_expire($id_passage);
